@@ -1,0 +1,7 @@
+.venv/
+t/
+arc/
+content/
+
+downloaded_files/
+logs/
