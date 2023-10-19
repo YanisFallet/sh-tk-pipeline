@@ -1,4 +1,5 @@
-nouveau readme : 
+nouveau readme : -
+- restocker toutes les variables dans des fichiers toml
 - travailler sur la creation de content
 - terminer le load metadata tiktok
 - terminer le tiktok uploader plus rajouter un peu de temps d'attente

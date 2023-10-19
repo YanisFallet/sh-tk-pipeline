@@ -2,12 +2,12 @@ import os
 import sys
 import time
 import json
+import toml
 import logging
 from pathlib import Path
 
 from selenium.webdriver.common.by import By
 
-from constant import Constant
 from metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -15,7 +15,7 @@ import data_manager
 from abstract_scrapper import get_driver
 from arc_manager import ArcManagement
 
-
+constants = toml.load("tiktok_uploader/constants.toml")
 
 class TiktokUplaoder:
     
@@ -37,27 +37,27 @@ class TiktokUplaoder:
             return json.load(f)[google_account_name]
         
     def __get_to_tiktok_upload(self):
-        self.browser.get(Constant.TIKTOK_CREATOR_CENTER)
-        time.sleep(Constant.USER_WAINTING_TIME)
+        self.browser.get(constants["TIKTOT_CREATOR_CENTER"])
+        time.sleep(constants["USER_WAITING_TIME"])
          
     def __upload(self, metadata_video : dict) -> bool:
-        absolute_path = os.path.join(Path().cwd(), metadata_video[Constant.FILEPATH])
+        absolute_path = os.path.join(Path().cwd(), metadata_video[constants["FILEPATH"]])
         
-        self.browser.find_element(By.CSS_SELECTOR, Constant.UPLOAD_CONTAINER_CSS_SELECTOR).send_keys(
+        self.browser.find_element(By.CSS_SELECTOR, constants["UPLOAD_CONTAINER_CSS_SELECTOR"]).send_keys(
             absolute_path
         )
         logging.info(f"Attached Video {absolute_path}")
-        time.sleep(Constant.USER_WAINTING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         
-        self.browser.find_element(By.XPATH, Constant.CAPTION_INPUT).send_keys(
-            metadata_video[Constant.CAPTION_CONTENT]
+        self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"]).send_keys(
+            metadata_video[constants["CAPTION_CONTENT"]]
         )
-        time.sleep(Constant.USER_WAINTING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         
-        self.browser.find_element(By.XPATH, Constant.POST_BUTTON).click()
-        time.sleep(Constant.USER_WAINTING_TIME)
+        self.browser.find_element(By.XPATH, constants["POST_BUTTON"]).click()
+        time.sleep(constants["USER_WAITING_TIME"])
         
-        data_manager.is_published(id_filename=metadata_video[Constant.ID_FILENAME])
+        data_manager.is_published(id_filename=metadata_video[constants["ID_FILENAME"]])
         
         os.remove(absolute_path)
         
@@ -68,7 +68,7 @@ class TiktokUplaoder:
         for metadata_video in metadata_channel:
             self.__get_to_tiktok_upload()
             self.__upload(metadata_video)
-            time.sleep(Constant.USER_WAINTING_TIME)
+            time.sleep(constants["USER_WAITING_TIME"])
             
     def __quit(self):
         self.browser.quit()

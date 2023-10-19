@@ -1,17 +1,20 @@
 import os
 import json
+import toml
 import random
 
 from tqdm import tqdm
 from moviepy.video.fx.crop import crop
-from moviepy.video.fx import fadein, fadeout
 from moviepy.editor import VideoFileClip, clips_array, concatenate_videoclips
+from moviepy.video.fx.margin import margin
+from skimage.filters import gaussian
+
 
 import data_manager
 from arc_manager import ArcManagement
 
-SIZE_FACTOR = 0.7
 
+constants = toml.load("create_content/constants.toml")
 
 def return_all_dists_to_process():
     l = ["tiktok", "youtube", "instagram"]
@@ -63,17 +66,28 @@ def videos_to_process_by_account(cursor_database, all_dists_to_process : str):
         
         
         data_manager.is_processed(id_filename=content[0])
+        
+def blur_video(image):
+    return gaussian(image.astype(float), sigma=0.1)
 
 def process_content(id_filename : str, filepath : str, dist_account : str):
     video = VideoFileClip(filename=filepath)
     width, height = video.w, video.h
     
-    pool_video = generate_pool_video(video.duration, width, 0.3*height)
+    borders = True
     
-    clips_array([[video], [pool_video]]).write_videofile(f"featured.mp4", fps=24, codec="libx264")
+    pool_video = generate_pool_video(video.duration, width, (1-constants["SIZE_FACTOR"] + 0.3)*height)
+    n_video = crop(video, width=width, height=height*constants["SIZE_FACTOR"], x_center=width/2, y_center=height/2)
+    n_video = n_video.fl_image(blur_video)
     
+    if borders: 
+        frame_color = (0, 0, 0)  # Couleur du cadre (noir dans cet exemple)
+        frame_width = 10  # Largeur du cadre (ajustez selon vos besoins)
+        frame_clip = n_video.fx(margin, left=frame_width, right=frame_width, top=frame_width, bottom=frame_width, color=frame_color)
 
-
+    
+    clips_array([[n_video], [pool_video]]).write_videofile(f"t/featured.mp4", fps=24, codec="libx264")
+    return True
 
 def generate_pool_video(time_to_fill : float, width : float, height : float) -> VideoFileClip:
     filled = False
@@ -94,4 +108,4 @@ def generate_pool_video(time_to_fill : float, width : float, height : float) -> 
 
 
 if __name__ == "__main__":
-    pass
+    process_content("1", "t/7289467392646860064.mp4", "")

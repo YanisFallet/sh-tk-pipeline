@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import json
+import toml
 import logging
 import platform
 from datetime import datetime
@@ -24,6 +25,8 @@ logging.basicConfig(filemode='w',
                     filename='logs/ytb_uploader.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
                     level=logging.INFO)
+
+constants = toml.load("ytb_uploader/constants.toml")
 
 class YoutubeUploader:
     
