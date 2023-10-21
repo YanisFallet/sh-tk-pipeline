@@ -15,7 +15,7 @@ import data_manager
 from abstract_scrapper import get_driver
 from arc_manager import ArcManagement
 
-constants = toml.load("tiktok_uploader/constants.toml")
+constants = toml.load("core/tiktok_uploader/constants.toml")
 
 class TiktokUplaoder:
     
@@ -37,7 +37,7 @@ class TiktokUplaoder:
             return json.load(f)[google_account_name]
         
     def __get_to_tiktok_upload(self):
-        self.browser.get(constants["TIKTOT_CREATOR_CENTER"])
+        self.browser.get(constants["TIKTOK_CREATOR_CENTER"])
         time.sleep(constants["USER_WAITING_TIME"])
          
     def __upload(self, metadata_video : dict) -> bool:

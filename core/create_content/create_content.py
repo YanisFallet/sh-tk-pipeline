@@ -79,7 +79,7 @@ def process_content(filepath : str, params : dict = {}) -> bool:
     margin_size = params.get("margin_size", 9)
     
     if params.get("featuring_video", None) == True:
-        pool_video = generate_pool_video(video.duration, width, (1-constants["SIZE_FACTOR"] + 0.3)*height, border = border, margin_size=margin_size, color=color)
+        pool_video = generate_pool_video(video.duration, width, (1-constants["SIZE_FACTOR"] + 0.2)*height, border = border, margin_size=margin_size, color=color)
         n_video = crop(video, width=width, height=height*constants["SIZE_FACTOR"], x_center=width/2, y_center=height/2)
     else : 
         n_video = video

@@ -2,7 +2,6 @@ import os
 import json
 import random
 
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.editor import VideoFileClip
 
 from data_manager import sql_connect
@@ -42,6 +41,13 @@ def remove_non_bmp_characters(input_string):
         if ord(char) <= 0xFFFF:  # Vérifie si le point de code est dans le BMP
             result += char
     return result
+
+def cut_videos(path : str, max_time : int = 60):
+    clip = VideoFileClip(path)
+    duration = clip.duration
+    if duration > max_time:
+        clip.set_duration(max_time)
+        clip.write_videofile(path, fps=24, codec="libx264", threads=4, preset="ultrafast")
 
 @sql_connect('data/database.db')    
 def update_share_to_account(cursor, src_p : str, dist_p : str):

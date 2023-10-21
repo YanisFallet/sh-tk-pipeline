@@ -56,8 +56,9 @@ ACCOUNT_IMG = '/html/body/ytcp-app/ytcp-entity-page/div/ytcp-header/header/div/y
 CHANNEL_NAME = '/html/body/ytcp-app/ytcp-popup-container/tp-yt-iron-dropdown/div/ytd-multi-page-menu-renderer/div[2]/ytd-active-account-header-renderer/div/yt-formatted-string[1]'
 CHANGE_ACCOUNT = '/html/body/ytcp-app/ytcp-popup-container/tp-yt-iron-dropdown/div/ytd-multi-page-menu-renderer/div[3]/div[1]/yt-multi-page-menu-section-renderer[1]/div[2]/ytd-compact-link-renderer[3]/a/tp-yt-paper-item'
 ACCOUNTS = "/html/body/ytcp-app/ytcp-popup-container/tp-yt-iron-dropdown/div/ytd-multi-page-menu-renderer/div[4]/ytd-multi-page-menu-renderer/div[3]/div[1]/ytd-account-section-list-renderer/div[2]/ytd-account-item-section-renderer/div[2]/ytd-account-item-renderer"
-CHANNEL_TITLE = lambda x  : f"/html/body/ytcp-app/ytcp-popup-container/tp-yt-iron-dropdown/div/ytd-multi-page-menu-renderer/div[4]/ytd-multi-page-menu-renderer/div[3]/div[1]/ytd-account-section-list-renderer/div[2]/ytd-account-item-section-renderer/div[2]/ytd-account-item-renderer[{x}]/tp-yt-paper-icon-item/tp-yt-paper-item-body/yt-formatted-string[1]"
-RIGHT_CHANNEL = lambda x  : f"/html/body/ytcp-app/ytcp-popup-container/tp-yt-iron-dropdown/div/ytd-multi-page-menu-renderer/div[4]/ytd-multi-page-menu-renderer/div[3]/div[1]/ytd-account-section-list-renderer/div[2]/ytd-account-item-section-renderer/div[2]/ytd-account-item-renderer[{x}]"
+
+RIGHT_CHANNEL = "/html/body/ytcp-app/ytcp-popup-container/tp-yt-iron-dropdown/div/ytd-multi-page-menu-renderer/div[4]/ytd-multi-page-menu-renderer/div[3]/div[1]/ytd-account-section-list-renderer/div[2]/ytd-account-item-section-renderer/div[2]/ytd-account-item-renderer[{x}]"
+CHANNEL_TITLE = "tp-yt-paper-icon-item/tp-yt-paper-item-body/yt-formatted-string[1]"
 
 
 #Close button

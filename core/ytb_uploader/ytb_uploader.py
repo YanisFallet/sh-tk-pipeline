@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from ytb_uploader.metadata import load_metadata
-from ytb_uploader.constant import Constant
+
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import utils
@@ -26,7 +26,7 @@ logging.basicConfig(filemode='w',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
                     level=logging.INFO)
 
-constants = toml.load("ytb_uploader/constants.toml")
+constants = toml.load("core/ytb_uploader/constants.toml")
 
 class YoutubeUploader:
     
@@ -55,12 +55,12 @@ class YoutubeUploader:
         
     def __clear_field(self, field : uc.WebElement):
         field.click()
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         if self.is_mac:
             field.send_keys(Keys.COMMAND + "a")
         else:
             field.send_keys(Keys.CONTROL + "a")
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         field.send_keys(Keys.BACKSPACE)
     
     def __write_in_field(self, field : uc.WebElement, string : str, select_all : bool = False):
@@ -68,135 +68,137 @@ class YoutubeUploader:
             self.__clear_field(field)
         else : 
             field.click()
-            time.sleep(Constant.USER_WAITING_TIME)
+            time.sleep(constants["USER_WAITING_TIME"])
         field.send_keys(string)
         
     def __go_to_ytb_studio(self):
-        self.browser.get(Constant.YOUTUBE_URL)
-        time.sleep(Constant.USER_WAITING_TIME)
-        self.browser.get(Constant.YOUTUBE_STUDIO_URL)
+        self.browser.get(constants["YOUTUBE_URL"])
+        time.sleep(constants["USER_WAITING_TIME"])
+        self.browser.get(constants["YOUTUBE_STUDIO_URL"])
         
     def __get_which_channel(self):
-        self.browser.find_element(By.XPATH, Constant.ACCOUNT_IMG).click()
-        time.sleep(Constant.USER_WAITING_TIME)
-        name = self.browser.find_element(By.XPATH, Constant.CHANNEL_NAME).text
-        self.browser.find_element(By.XPATH, Constant.ACCOUNT_IMG).click()
+        self.browser.find_element(By.XPATH, constants["ACCOUNT_IMG"]).click()
+        time.sleep(constants["USER_WAITING_TIME"])
+        name = self.browser.find_element(By.XPATH, constants["CHANNEL_NAME"]).text
+        self.browser.find_element(By.XPATH, constants["ACCOUNT_IMG"]).click()
         return name
         
     def __switch_channel(self, target_name : str):
-        self.browser.find_element(By.XPATH, Constant.ACCOUNT_IMG).click()
-        time.sleep(Constant.USER_WAITING_TIME)
-        self.browser.find_element(By.XPATH, Constant.CHANGE_ACCOUNT).click()
-        time.sleep(Constant.USER_WAITING_TIME)
+        self.browser.find_element(By.XPATH, constants["ACCOUNT_IMG"]).click()
+        time.sleep(constants["USER_WAITING_TIME"])
+        self.browser.find_element(By.XPATH, constants["CHANGE_ACCOUNT"]).click()
+        time.sleep(constants["USER_WAITING_TIME"])
         
-        nb_accounts = len(self.browser.find_elements(By.XPATH, Constant.ACCOUNTS))
+        nb_accounts = len(self.browser.find_elements(By.XPATH, constants["ACCOUNTS"]))
         i = 1
         found = False
         while i <= nb_accounts and not found:
-            channel_title = self.browser.find_element(By.XPATH, Constant.CHANNEL_TITLE(i))
+            channel_title = self.browser.find_element(By.XPATH, constants["RIGHT_CHANNEL"] + f"[{i}]" + constants["CHANNEL_TITLE"])
             if channel_title.text == target_name:
                 found = True
-                self.browser.find_element(By.XPATH, Constant.RIGHT_CHANNEL(i)).click()
-                time.sleep(Constant.USER_WAITING_TIME)
+                self.browser.find_element(By.XPATH, constants["RIGHT_CHANNEL"] + f"[{i}]").click()
+                time.sleep(constants["USER_WAITING_TIME"])
             i += 1
         
         return found
     
     def __upload(self, video_path : str, video_metadata : dict):
         
-        video_metadata[Constant.VIDEO_SCHEDULE] = data_manager.schedule_video(
-            dist_account = video_metadata[Constant.VIDEO_ACCOUNT],
+        video_metadata[constants["VIDEO_SCHEDULE"]] = data_manager.schedule_video(
+            dist_account = video_metadata[constants["VIDEO_ACCOUNT"]],
             platform = "youtube",
-            id_filename = video_metadata[Constant.VIDEO_ID_FILENAME]
+            id_filename = video_metadata[constants["VIDEO_ID_FILENAME"]]
         )
         
         absolute_path_video = os.path.join(Path.cwd(), video_path)
-        utils.cut_videos(absolute_path_video)
-        time.sleep(Constant.USER_WAITING_TIME)
         
-        self.browser.get(Constant.YOUTUBE_UPLOAD_URL)
-        time.sleep(Constant.USER_WAITING_TIME)
-        self.browser.find_element(By.XPATH, Constant.INPUT_FILE_VIDEO).send_keys(absolute_path_video)
+        utils.cut_videos(absolute_path_video)
+
+        time.sleep(constants["USER_WAITING_TIME"])
+        
+        self.browser.get(constants["YOUTUBE_UPLOAD_URL"])
+        time.sleep(constants["USER_WAITING_TIME"])
+        self.browser.find_element(By.XPATH, constants["INPUT_FILE_VIDEO"]).send_keys(absolute_path_video)
         logging.debug(f"Attached Video {video_path}")
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         
         uploading_status_container = None
         while uploading_status_container is None:
-            time.sleep(Constant.USER_WAITING_TIME)
-            uploading_status_container = self.browser.find_element(By.XPATH, Constant.UPLOADING_STATUS_CONTAINER)
+            time.sleep(constants["USER_WAITING_TIME"])
+            uploading_status_container = self.browser.find_element(By.XPATH, constants["UPLOADING_STATUS_CONTAINER"])
             
-        title_field, description_field = self.browser.find_elements(By.ID, Constant.TEXTBOX_ID)
+        title_field, description_field = self.browser.find_elements(By.ID, constants["TEXTBOX_ID"])
         
         title_field.clear()
         
-        self.__write_in_field(title_field, video_metadata[Constant.VIDEO_TITLE])
-        logging.debug(f"Title {video_metadata[Constant.VIDEO_TITLE]}")
-        time.sleep(Constant.USER_WAITING_TIME)
+        self.__write_in_field(title_field, video_metadata[constants["VIDEO_TITLE"]])
+        logging.debug(f"Title {video_metadata[constants['VIDEO_TITLE']]}")
+        time.sleep(constants["USER_WAITING_TIME"])
         
-        video_description = video_metadata[Constant.VIDEO_DESCRIPTION].replace("\n", Keys.ENTER)
+        video_description = video_metadata[constants["VIDEO_DESCRIPTION"]].replace("\n", Keys.ENTER)
         if video_description:
             self.__write_in_field(description_field, video_description)
             logging.debug(f"Description set to {video_description}")
-            time.sleep(Constant.USER_WAITING_TIME)
+            time.sleep(constants["USER_WAITING_TIME"])
         
-        kids_section = self.browser.find_element(By.NAME, Constant.NOT_MADE_FOR_KIDS_LABEL)
+        kids_section = self.browser.find_element(By.NAME, constants["NOT_MADE_FOR_KIDS_LABEL"])
         kids_section.location_once_scrolled_into_view
-        time.sleep(Constant.USER_WAITING_TIME)
-        self.browser.find_element(By.ID, Constant.RADIO_LABEL).click()
+        time.sleep(constants["USER_WAITING_TIME"])
+        self.browser.find_element(By.ID, constants["RADIO_LABEL"]).click()
         
-        self.browser.find_element(By.ID, Constant.ADVANCED_BUTTON_ID).click()
+        self.browser.find_element(By.ID, constants["ADVANCED_BUTTON_ID"]).click()
         logging.debug("Advanced button clicked")
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         
-        tags = video_metadata[Constant.VIDEO_TAGS]
-        time.sleep(Constant.USER_WAITING_TIME)
+        tags = video_metadata[constants["VIDEO_TAGS"]]
+        time.sleep(constants["USER_WAITING_TIME"])
         if tags:
-            tags_field = self.browser.find_element(By.XPATH, Constant.TAGS_INPUT_V2)
+            tags_field = self.browser.find_element(By.XPATH, constants["TAGS_INPUT_V2"])
             tags_field.location_once_scrolled_into_view
             self.__write_in_field(tags_field, tags)
             logging.debug(f"Tags set to {tags}")
-            time.sleep(Constant.USER_WAITING_TIME)
+            time.sleep(constants["USER_WAITING_TIME"])
         
-        self.browser.find_element(By.ID, Constant.NEXT_BUTTON).click()
-        time.sleep(Constant.USER_WAITING_TIME)
-        self.browser.find_element(By.ID, Constant.NEXT_BUTTON).click()
-        time.sleep(Constant.USER_WAITING_TIME)
-        self.browser.find_element(By.ID, Constant.NEXT_BUTTON).click()
+        self.browser.find_element(By.ID, constants["NEXT_BUTTON"]).click()
+        time.sleep(constants["USER_WAITING_TIME"])
+        self.browser.find_element(By.ID, constants["NEXT_BUTTON"]).click()
+        time.sleep(constants["USER_WAITING_TIME"])
+        self.browser.find_element(By.ID, constants["NEXT_BUTTON"]).click()
         logging.debug("Next button clicked 3 times")
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         
-        schedule = video_metadata[Constant.VIDEO_SCHEDULE]
+        schedule = video_metadata[constants["VIDEO_SCHEDULE"]]
         
         if schedule is not None:
             upload_time_object = datetime.strptime(schedule, "%Y-%m-%d %H:%M:%S")
-            self.browser.find_element(By.ID, Constant.SCHEDULE_CONTAINER_ID).click()
-            self.browser.find_element(By.ID, Constant.SCHEDULE_DATE_ID).click()
-            self.browser.find_element(By.XPATH, Constant.SCHEDULE_DATE_TEXTBOX).clear()
-            self.browser.find_element(By.XPATH, Constant.SCHEDULE_DATE_TEXTBOX).send_keys(
+            self.browser.find_element(By.ID, constants["SCHEDULE_CONTAINER_ID"]).click()
+            self.browser.find_element(By.ID, constants["SCHEDULE_DATE_ID"]).click()
+            self.browser.find_element(By.XPATH, constants["SCHEDULE_DATE_TEXTBOX"]).clear()
+            self.browser.find_element(By.XPATH, constants["SCHEDULE_DATE_TEXTBOX"]).send_keys(
                 datetime.strftime(upload_time_object, "%d/%m/%Y"))
-            self.browser.find_element(By.XPATH, Constant.SCHEDULE_DATE_TEXTBOX).send_keys(Keys.ENTER)
+            self.browser.find_element(By.XPATH, constants["SCHEDULE_DATE_TEXTBOX"]).send_keys(Keys.ENTER)
             logging.debug(f"Schedule set to {schedule}")
         else: 
-            public_main_button = self.browser.find_element(By.NAME, Constant.PUBLIC_BUTTON)
-            self.browser.find_element(By.ID, Constant.RADIO_LABEL).click()
+            public_main_button = self.browser.find_element(By.NAME, constants["PUBLIC_BUTTON"])
+            self.browser.find_element(By.ID, constants["RADIO_LABEL"]).click()
             logging.debug(f"{video_path} : Public button clicked")
             
             
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
             
-        done_button = self.browser.find_element(By.ID, Constant.DONE_BUTTON)
+        done_button = self.browser.find_element(By.ID, constants["DONE_BUTTON"])
         
         if done_button.get_attribute("aria-disabled") == "true":
-            error_message = self.browser.find_element(By.XPATH, Constant.ERROR_CONTAINER).text
+            error_message = self.browser.find_element(By.XPATH, constants["ERROR_CONTAINER"]).text
             logging.error(f"Error message : {error_message}")
             return False
         
         done_button.click()
-        time.sleep(2*Constant.USER_WAITING_TIME)
-        self.browser.find_element(By.XPATH, Constant.CLOSE_BTN).click()
+        time.sleep(2*constants["USER_WAITING_TIME"])
+        self.browser.find_element(By.XPATH, constants["CLOSE_BTN"]).click()
         logging.debug("Published the video {video_path} on Youtube")
         
-        data_manager.is_published(id_filename=video_metadata[Constant.VIDEO_ID_FILENAME], platform="youtube")
+        data_manager.is_published(id_filename=video_metadata[constants["VIDEO_ID_FILENAME"]], platform="youtube")
 
         os.remove(absolute_path_video)
         
@@ -204,25 +206,25 @@ class YoutubeUploader:
     
     def __bulk_upload(self, metadata_channel : list[dict]):
         i = 0
-        while i < len(metadata_channel) and data_manager.is_uploadable(metadata_channel[i][Constant.VIDEO_PATH], platform="youtube", count = True):
-            self.__upload(metadata_channel[i][Constant.VIDEO_PATH], metadata_channel[i])
-            time.sleep(3*Constant.USER_WAITING_TIME)
+        while i < len(metadata_channel) and data_manager.is_uploadable(metadata_channel[i][constants["VIDEO_PATH"]], platform="youtube", count = True):
+            self.__upload(metadata_channel[i][constants["VIDEO_PATH"]], metadata_channel[i])
+            time.sleep(3*constants["USER_WAITING_TIME"])
             i+=1
             
     def __minimum_upload(self, metadata_channel : list[dict]):
-        return len(metadata_channel) > Constant.MIN_VIDEOS_TO_UPLOAD
+        return len(metadata_channel) > constants["MIN_VIDEOS_TO_UPLOAD"]
 
         
     def run(self):
         #initialize browser
         self.get_driver_y()
         #go to youtube studio
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         self.__go_to_ytb_studio()
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         #current channel situation
         current_channel = self.__get_which_channel()
-        time.sleep(Constant.USER_WAITING_TIME)
+        time.sleep(constants["USER_WAITING_TIME"])
         metadata_channel = load_metadata(dist_account = current_channel, platform="youtube")
 
         if self.__minimum_upload(metadata_channel=metadata_channel) and data_manager.is_uploadable(current_channel, platform="youtube", count = False):

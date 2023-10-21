@@ -25,6 +25,7 @@ class InstaScrapper:
         self.channel_name = channel_name
         self.dist_platform = dist_platform
         self.pool = pool
+        logger.info(f"InstaScrapper: {self.channel_name} - {self.dist_platform} - {self.pool}")
         
         if role in ["pool", "content"] : self.role = role
         else : raise ValueError("role must be 'pool' or 'content'")
@@ -78,7 +79,7 @@ class InstaScrapper:
         
 if __name__ == "__main__":
     insta = InstaScrapper('imangadzhi', 'youtube', "iman_gadzhi", role = "content")
-    # insta.run()s
+    # insta.run()
     
     
     

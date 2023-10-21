@@ -6,7 +6,7 @@ import logging
 logging.basicConfig(filename='logs/data_manager.log',
                     filemode='w',
                     level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+                    format='%(name)s - %(asctime)s - %(levelname)s - %(message)s')
 
 def sql_connect(relativ_path_to_database : str):
     def wrapper1(func):

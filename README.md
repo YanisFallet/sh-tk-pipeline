@@ -13,7 +13,7 @@ Prochaines choses à dev :
 - réorganiser le create content pour pouvoir passer des params de montage directement dans le fichier arc ✅
 - terminer le create content ✅
 
-- changer tous ce qui est impacté par les fichiers toml
+- changer tous ce qui est impacté par les fichiers toml 🏃‍♂️
 
 - résoudre le problème des logs qui ne vont pas dans le bon fichier
 
