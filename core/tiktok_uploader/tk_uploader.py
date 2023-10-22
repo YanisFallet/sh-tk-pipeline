@@ -15,6 +15,8 @@ import data_manager
 from abstract_scrapper import get_driver
 from arc_manager import ArcManagement
 
+logger = logging.getLogger(__name__)
+
 constants = toml.load("core/tiktok_uploader/constants.toml")
 
 class TiktokUplaoder:
@@ -46,7 +48,7 @@ class TiktokUplaoder:
         self.browser.find_element(By.CSS_SELECTOR, constants["UPLOAD_CONTAINER_CSS_SELECTOR"]).send_keys(
             absolute_path
         )
-        logging.info(f"Attached Video {absolute_path}")
+        logger.info(f"Attached Video {absolute_path}")
         time.sleep(constants["USER_WAITING_TIME"])
         
         self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"]).send_keys(

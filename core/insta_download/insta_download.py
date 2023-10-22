@@ -11,11 +11,6 @@ from arc_manager import ArcManagement
 
 USER_WAITING_TIME = 2
 
-logging.basicConfig(level=logging.INFO,
-                    filename='logs/insta_download.log',
-                    filemode='w',
-                    format='%(name)s - %(levelname)s - %(message)s')
-
 logger = logging.getLogger(__name__)
 
 

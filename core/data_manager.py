@@ -3,10 +3,7 @@ from random import randint
 from datetime import datetime, timedelta
 import logging
 
-logging.basicConfig(filename='logs/data_manager.log',
-                    filemode='w',
-                    level=logging.INFO,
-                    format='%(name)s - %(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def sql_connect(relativ_path_to_database : str):
     def wrapper1(func):
@@ -145,7 +142,7 @@ def is_uploadable(cursor : sqlite3.Cursor, dist_account : str, platform : str, c
     if data_dist is None:
         daily_upload = 1 if count else 0
         cursor.execute(f"INSERT INTO dist_update (dist, platform, updated_time, daily_upload, limit_date_for_daily) VALUES('{dist_account}', '{platform}', '{datetime.now()}', '{datetime.now()}', {daily_upload}, '{datetime.now() + timedelta(days = 1, minutes = edge)}')")
-        logging.info(f"New dist '{dist_account}' on '{platform}' added")
+        logger.info(f"New dist '{dist_account}' on '{platform}' added")
         return True
     else:
         date_limit = datetime.strptime(data_dist[-1], '%Y-%m-%d %H:%M:%S.%f')
@@ -153,11 +150,11 @@ def is_uploadable(cursor : sqlite3.Cursor, dist_account : str, platform : str, c
         if datetime.now() < date_limit:
             if nbr_daily_upload < MAX_UPLOAD_DAILY:
                 if count:
-                    logging.info(f"Dist '{dist_account}' on '{platform}' has {MAX_UPLOAD_DAILY - nbr_daily_upload - 1} upload(s) left")
+                    logger.info(f"Dist '{dist_account}' on '{platform}' has {MAX_UPLOAD_DAILY - nbr_daily_upload - 1} upload(s) left")
                     cursor.execute(f"UPDATE dist_update SET daily_upload = {nbr_daily_upload + 1} WHERE dist = '{dist_account}' AND platform = '{platform}'")
                 return True
             else:
-                logging.info(f"Dist '{dist_account}' on '{platform} has reached the daily upload limit: {MAX_UPLOAD_DAILY}")
+                logger.info(f"Dist '{dist_account}' on '{platform} has reached the daily upload limit: {MAX_UPLOAD_DAILY}")
                 return False
         else:
             daily_upload = 1 if count else 0
@@ -173,7 +170,7 @@ def schedule_video(cursor_database : sqlite3.Cursor, dist_account : str, platfor
     if last_scheduled is None:
         r_date = datetime.now() + timedelta(minutes = edge)
         cursor_database.execute(f"UPDATE data_content SET schedule = '{r_date}' WHERE id_filename = '{id_filename}'")
-        logging.info(f"First video scheduled to {r_date} for dist '{dist_account}' on '{platform}'")
+        logger.info(f"First video scheduled to {r_date} for dist '{dist_account}' on '{platform}'")
         return r_date
     else:
         last_scheduled_D = datetime.strptime(last_scheduled[1], '%Y-%m-%d %H:%M:%S.%f')
@@ -181,11 +178,11 @@ def schedule_video(cursor_database : sqlite3.Cursor, dist_account : str, platfor
         if th_date < datetime.now():
             r_date = datetime.now() + timedelta(minutes = edge)
             cursor_database.execute(f"UPDATE data_content SET schedule = '{r_date}' WHERE id_filename = '{id_filename}'")
-            logging.info(f"Video scheduled '{id_filename}' to {r_date} for dist '{dist_account}' on '{platform}'")
+            logger.info(f"Video scheduled '{id_filename}' to {r_date} for dist '{dist_account}' on '{platform}'")
             return r_date
         else : 
             cursor_database.execute(f"UPDATE data_content SET schedule = '{th_date}' WHERE id_filename = '{id_filename}'")
-            logging.info(f"Video scheduled '{id_filename}' to {th_date} for dist '{dist_account}' on '{platform}'")
+            logger.info(f"Video scheduled '{id_filename}' to {th_date} for dist '{dist_account}' on '{platform}'")
             return th_date
 
 @sql_connect("data/database.db")
@@ -218,10 +215,3 @@ def update_one_pool(cursor : sqlite3.Cursor, src_account, platform):
                        VALUES(?, ?, ?, ?)""", (src_account, platform, datetime.now(), 1))
     else :
         cursor.execute(f"UPDATE pool_update SET updated_counter = '{selection[1] + 1}', updated_time = '{datetime.now()}' WHERE src = '{src_account}' AND platform = '{platform}' ")
-
-
-
-if __name__ == "__main__":
-    from core.update_traj import create_all_tables
-    create_all_tables()
-    schedule_video("TheIman", "youtube", "B_qEAoUDFDG")

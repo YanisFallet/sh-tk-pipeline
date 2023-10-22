@@ -46,8 +46,23 @@ def cut_videos(path : str, max_time : int = 60):
     clip = VideoFileClip(path)
     duration = clip.duration
     if duration > max_time:
-        clip.set_duration(max_time)
-        clip.write_videofile(path, fps=24, codec="libx264", threads=4, preset="ultrafast")
+        clip.subclip(0, max_time).write_videofile("t/F.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
+        
+def get_dist_data(dist_account: str, platform: str):
+    file_path = f"arc/dist/{platform}.json"
+    if not os.path.exists(file_path):
+        return None
+    with open(file_path, "r") as f:
+        data = json.load(f)
+    return data.get(dist_account, None)
+
+def must_tagged(dist_account: str, platform: str) -> bool:
+    dist_data = get_dist_data(dist_account, platform)
+    return bool(dist_data and dist_data.get("must_tagged", False))
+
+def get_language(dist_account: str, platform: str) -> str:
+    dist_data = get_dist_data(dist_account, platform)
+    return dist_data.get("language", "fr") if dist_data else "fr"
 
 @sql_connect('data/database.db')    
 def update_share_to_account(cursor, src_p : str, dist_p : str):
@@ -60,5 +75,5 @@ def update_share_to_account(cursor, src_p : str, dist_p : str):
 
 
 
- 
-    
+if __name__ == "__main__":
+    pass

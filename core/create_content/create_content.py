@@ -15,6 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import data_manager
 from arc_manager import ArcManagement
 
+logger = logging.getLogger(__name__)
 
 constants = toml.load("core/create_content/constants.toml")
 
@@ -87,13 +88,13 @@ def process_content(filepath : str, params : dict = {}) -> bool:
     n_video = n_video.fl_image(blur_video)
     
     if border and params.get("featuring_video", None) == True:
-        clips_array([[n_video], [pool_video]]).fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color).write_videofile(f"t/featured.mp4", fps=24, codec="libx264")
+        clips_array([[n_video], [pool_video]]).fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color).write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
     elif params.get("featuring_video", None) == True:
-        clips_array([[n_video], [pool_video]]).write_videofile(f"t/featured.mp4", fps=24, codec="libx264")
+        clips_array([[n_video], [pool_video]]).write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
     elif border:
-        n_video.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color).write_videofile(f"t/featured.mp4", fps=24, codec="libx264")
+        n_video.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color).write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
     else:
-        n_video.write_videofile(f"t/featured.mp4", fps=24, codec="libx264")
+        n_video.write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
 
 def generate_pool_video(time_to_fill : float, width : float, height : float, border : bool, margin_size = 7, color : tuple[int] = (0,0,0)) -> VideoFileClip:
     filled = False
@@ -127,10 +128,10 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
     for content in tqdm(selection, desc=f"Processing videos for {dist_account}", unit="video"):
         process_content(filepath=content[1]) 
         
-        logging.info(f"Video processing done for {content[1]} of {dist_account}")
+        logger.info(f"Video processing done for {content[1]} of {dist_account}")
         data_manager.is_processed(id_filename=content[0], params = params)
         
-    logging.info(f"Videos processing done for {dist_account}")
+    logger.info(f"Videos processing done for {dist_account}")
 
 def videos_processing(number_of_videos : int):
     
@@ -139,7 +140,7 @@ def videos_processing(number_of_videos : int):
     for dist_account, params in zip(all_dist_to_process, dist_params.keys()):
         videos_processing_by_account(dist_account=dist_account, params = dist_params[params])
     
-    logging.info(f"Videos processing done for {all_dist_to_process}")
+    logger.info(f"Videos processing done for {all_dist_to_process}")
     
 if __name__ == "__main__":
     print(return_all_dists_to_process_and_params())
