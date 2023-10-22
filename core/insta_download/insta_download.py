@@ -11,8 +11,9 @@ from arc_manager import ArcManagement
 
 USER_WAITING_TIME = 2
 
+logging.basicConfig(level=logging.INFO, filemode="a", filename="logs/journal.log")
 logger = logging.getLogger(__name__)
-
+logger.info("InstaScrapper loaded")
 
 class InstaScrapper:
     

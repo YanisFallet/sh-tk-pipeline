@@ -76,7 +76,7 @@ def process_content(filepath : str, params : dict = {}) -> bool:
             color = params["color"]
         else:
             color = pick_a_color()
-    
+
     margin_size = params.get("margin_size", 9)
     
     if params.get("featuring_video", None) == True:
@@ -126,10 +126,10 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
     """).fetchall()
     
     for content in tqdm(selection, desc=f"Processing videos for {dist_account}", unit="video"):
-        process_content(filepath=content[1]) 
+        process_content(filepath=content[1], params=params) 
         
         logger.info(f"Video processing done for {content[1]} of {dist_account}")
-        data_manager.is_processed(id_filename=content[0], params = params)
+        data_manager.is_processed(id_filename=content[0])
         
     logger.info(f"Videos processing done for {dist_account}")
 
@@ -143,4 +143,4 @@ def videos_processing(number_of_videos : int):
     logger.info(f"Videos processing done for {all_dist_to_process}")
     
 if __name__ == "__main__":
-    print(return_all_dists_to_process_and_params())
+    pass

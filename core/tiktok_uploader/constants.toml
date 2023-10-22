@@ -1,4 +1,4 @@
-USER_WAINTING_TIME = 2
+USER_WAITING_TIME = 3
 FILEPATH = "filepath"
 CAPTION_CONTENT = "caption"
 ID_FILENAME = "id_filename"

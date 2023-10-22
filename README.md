@@ -2,6 +2,8 @@ Règles à respecter pour l'architecture :
 - les pools doivent être uniques
 - les dist_accounts doivent être uniques par leur nom
 - les comptes à scrapper doivent être dans un seul pool
+- un unique dist account tiktok doit être associé à un compte google
+- jusqu'à 100 dist accounts ytb peuvent être associés à un compte google
 
 Prochaines choses à dev :
 

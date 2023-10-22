@@ -27,9 +27,13 @@ class TiktokUplaoder:
     
         if not google_account_name in ["shortsfactory33", "yanis.fallet", "picorp696"]:
             raise Exception(f"Google account '{google_account_name}' name not found")
+
+        self.ARC = ArcManagement(src_p=source_platform, dist_p="tiktok")
             
         self.google_account_name = google_account_name
         self.source_platform = source_platform
+        self.all_dist_accounts : list = self.ARC.get_dist_by_google_account(self.google_account_name)
+
 
     def __get_driver_t(self):
         self.browser = get_driver(self.__get_profile_path(self.google_account_name), headless = False)
@@ -71,15 +75,26 @@ class TiktokUplaoder:
             self.__get_to_tiktok_upload()
             self.__upload(metadata_video)
             time.sleep(constants["USER_WAITING_TIME"])
-            
+    
+    def test(self):
+        self.__get_to_tiktok_upload()
+        time.sleep(2*constants["USER_WAITING_TIME"])
+        self.__quit()
+        
     def __quit(self):
-        self.browser.quit()
+        self.browser.close()
             
     def run(self):
         self.__get_driver_t()
+        time.sleep(constants["USER_WAITING_TIME"])
+        metadata_channel = load_metadata(self.all_dist_accounts, self.source_platform)
         self.__bulk_upload()
         self.__quit()
         
+if __name__ == "__main__":
+    # a = TiktokUplaoder("shortsfactory33", "youtube")
+    # a.test()
+    print(load_metadata("imangadzhi", "tiktok"))
 
         
         
