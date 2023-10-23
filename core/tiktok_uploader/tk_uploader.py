@@ -6,6 +6,8 @@ import toml
 import logging
 from pathlib import Path
 
+from bs4 import BeautifulSoup
+
 from selenium.webdriver.common.by import By
 
 from metadata import load_metadata
@@ -32,8 +34,10 @@ class TiktokUplaoder:
             
         self.google_account_name = google_account_name
         self.source_platform = source_platform
-        self.all_dist_accounts : list = self.ARC.get_dist_by_google_account(self.google_account_name)
-
+        self.dist_account : list = self.ARC.get_dist_by_google_account(self.google_account_name)
+        
+        if len(self.dist_account) != 1:
+            raise Exception(f"Google account '{google_account_name}' is not linked to one and only one Tiktok account : {len(self.all_dist_accounts)} found")
 
     def __get_driver_t(self):
         self.browser = get_driver(self.__get_profile_path(self.google_account_name), headless = False)
@@ -49,11 +53,15 @@ class TiktokUplaoder:
     def __upload(self, metadata_video : dict) -> bool:
         absolute_path = os.path.join(Path().cwd(), metadata_video[constants["FILEPATH"]])
         
-        self.browser.find_element(By.CSS_SELECTOR, constants["UPLOAD_CONTAINER_CSS_SELECTOR"]).send_keys(
-            absolute_path
-        )
+        time.sleep(2*constants["USER_WAITING_TIME"])
+        
+        iframe =self.browser.find_element(By.CSS_SELECTOR, "iframe")
+        self.browser.switch_to.frame(iframe)
+        time.sleep(2*constants["USER_WAITING_TIME"])
+        
+        self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
         logger.info(f"Attached Video {absolute_path}")
-        time.sleep(constants["USER_WAITING_TIME"])
+        time.sleep(3*constants["USER_WAITING_TIME"])
         
         self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"]).send_keys(
             metadata_video[constants["CAPTION_CONTENT"]]
@@ -74,11 +82,13 @@ class TiktokUplaoder:
         for metadata_video in metadata_channel:
             self.__get_to_tiktok_upload()
             self.__upload(metadata_video)
-            time.sleep(constants["USER_WAITING_TIME"])
+            time.sleep(3*constants["USER_WAITING_TIME"])
     
-    def test(self):
+    def test(self, me):
+        self.__get_driver_t()
         self.__get_to_tiktok_upload()
         time.sleep(2*constants["USER_WAITING_TIME"])
+        self.__upload(me)
         self.__quit()
         
     def __quit(self):
@@ -87,14 +97,20 @@ class TiktokUplaoder:
     def run(self):
         self.__get_driver_t()
         time.sleep(constants["USER_WAITING_TIME"])
-        metadata_channel = load_metadata(self.all_dist_accounts, self.source_platform)
-        self.__bulk_upload()
+        metadata_channel = load_metadata(self.dist_account[0], self.source_platform)
+        self.__bulk_upload(metadata_channel=metadata_channel)
         self.__quit()
         
 if __name__ == "__main__":
-    # a = TiktokUplaoder("shortsfactory33", "youtube")
-    # a.test()
-    print(load_metadata("imangadzhi", "tiktok"))
+    a = TiktokUplaoder("shortsfactory33", "tiktok")
+    metadata_video = {
+        "id_filename" : "7289467392646860064",
+        "filepath" : "t/7289467392646860064.mp4",
+        "caption" : "test caption",
+        "dist_account" : "ViesHorsDuCommun"
+    }
+    a.test(metadata_video)
+
 
         
         

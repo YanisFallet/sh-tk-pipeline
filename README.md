@@ -5,9 +5,12 @@ Règles à respecter pour l'architecture :
 - un unique dist account tiktok doit être associé à un compte google
 - jusqu'à 100 dist accounts ytb peuvent être associés à un compte google
 
+=> pour des raisons de droits d'auteurs on va commencer pas mettre du contenu depuis instagram sur tiktok 
+et du contenu de tiktok sur ytb
+
 Prochaines choses à dev :
 
-- faire fonctionner le systeme de tiktok uploader
+- faire fonctionner le systeme de tiktok uploader ✅
 => load_metadata ✅
 
 - retravailler la creation des descriptions des videos pour etre en accord avec les droits d'auteurs✅
@@ -26,11 +29,4 @@ Prochaines choses à dev :
 
 - passer quelques heures à tous débogguer
 
-
-
-
-A coder ce soir : 
-- load_metadata ytb ✅
-- probleme cut videos ✅
-- tester le create content
-- tiktok uploader
+- tous tester
