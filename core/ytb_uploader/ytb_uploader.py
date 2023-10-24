@@ -225,21 +225,16 @@ class YoutubeUploader:
         metadata_channel = load_metadata(dist_account = current_channel, platform="youtube")
 
         if self.__minimum_upload(metadata_channel=metadata_channel) and data_manager.is_uploadable(current_channel, platform="youtube", count = False):
-            print("uploading", current_channel)
             self.__bulk_upload(metadata_channel)
             data_manager.update_one_dist(dist_account = current_channel, platform = "youtube")
-        
-        print(self.all_dist_accounts)
         
         self.all_dist_accounts.remove(current_channel)
         for channel in self.all_dist_accounts:
             metadata_channel = load_metadata(dist_account = channel, platform="youtube")
             
             if self.__minimum_upload(metadata_channel=metadata_channel) and data_manager.is_uploadable(channel, platform="youtube", count = False):
-                print("uploading", channel)
                 switched = self.__switch_channel(channel)
                 if switched:
-                    print("switched")
                     self.__bulk_upload(metadata_channel)
                     data_manager.update_one_dist(dist_account = channel, platform = "youtube")
 

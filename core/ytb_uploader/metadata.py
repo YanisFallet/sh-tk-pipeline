@@ -12,6 +12,7 @@ def load_metadata(cursor, dist_account : str, platform : str):
     data = cursor.execute(f"""
         SELECT filepath, id_filename, schedule, description, dist_account, source_account, source_platform, tags FROM data_content
         WHERE  is_published = 0
+        AND is_processed = 1
         AND dist_account = '{dist_account}'
         AND dist_platform = '{platform}'
         AND role = 'content'

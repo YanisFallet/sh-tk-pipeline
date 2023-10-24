@@ -6,7 +6,6 @@ import toml
 import logging
 from pathlib import Path
 
-from bs4 import BeautifulSoup
 
 from selenium.webdriver.common.by import By
 
@@ -63,26 +62,28 @@ class TiktokUplaoder:
         logger.info(f"Attached Video {absolute_path}")
         time.sleep(3*constants["USER_WAITING_TIME"])
         
-        self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"]).send_keys(
-            metadata_video[constants["CAPTION_CONTENT"]]
-        )
+        caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"])
+        caption.clear()
+        caption.send_keys(metadata_video[constants["CAPTION"]])
+        
         time.sleep(constants["USER_WAITING_TIME"])
         
         self.browser.find_element(By.XPATH, constants["POST_BUTTON"]).click()
         time.sleep(constants["USER_WAITING_TIME"])
         
         data_manager.is_published(id_filename=metadata_video[constants["ID_FILENAME"]])
+        logger.info(f"Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
         
         os.remove(absolute_path)
-        
         return True
     
     
     def __bulk_upload(self, metadata_channel : list[dict]):
         for metadata_video in metadata_channel:
-            self.__get_to_tiktok_upload()
-            self.__upload(metadata_video)
-            time.sleep(3*constants["USER_WAITING_TIME"])
+            if  data_manager.is_uploadable(self.dist_account[0], "tiktok", MAX_UPLOAD_DAILY=10):                   
+                self.__get_to_tiktok_upload()
+                self.__upload(metadata_video)
+                time.sleep(3*constants["USER_WAITING_TIME"])
     
     def test(self, me):
         self.__get_driver_t()
@@ -95,17 +96,22 @@ class TiktokUplaoder:
         self.browser.close()
             
     def run(self):
-        self.__get_driver_t()
-        time.sleep(constants["USER_WAITING_TIME"])
-        metadata_channel = load_metadata(self.dist_account[0], self.source_platform)
-        self.__bulk_upload(metadata_channel=metadata_channel)
-        self.__quit()
+        if data_manager.is_uploadable(self.dist_account[0], "tiktok", count = False, MAX_UPLOAD_DAILY=10):
+            self.__get_driver_t()
+            time.sleep(constants["USER_WAITING_TIME"])
+            metadata_channel = load_metadata(self.dist_account[0], self.source_platform)    
+            self.__bulk_upload(metadata_channel=metadata_channel)
+            logging.info(f"Upload to Tiktok for {self.dist_account[0]} finished")
+            self.__quit()
+        else:
+            logging.info(f"Upload to Tiktok for {self.dist_account[0]} not uplaodable")
+            self.__quit()
         
 if __name__ == "__main__":
     a = TiktokUplaoder("shortsfactory33", "tiktok")
     metadata_video = {
-        "id_filename" : "7289467392646860064",
-        "filepath" : "t/7289467392646860064.mp4",
+        "id_filename" : "7290165867478846752",
+        "filepath" : "t/7290165867478846752.mp4",
         "caption" : "test caption",
         "dist_account" : "ViesHorsDuCommun"
     }

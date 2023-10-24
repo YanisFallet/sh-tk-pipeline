@@ -34,7 +34,7 @@ def return_all_dists_to_process_and_params() -> tuple[list[str], dict]:
                 all_dists[platform].extend(dist)
             else:
                 all_dists[platform] = dist
-                
+    print(all_dists)
     dist_to_process = []
     dist_params = {}
     for platform in all_dists.keys():
@@ -142,5 +142,6 @@ def videos_processing(number_of_videos : int):
     
     logger.info(f"Videos processing done for {all_dist_to_process}")
     
+
 if __name__ == "__main__":
-    pass
+    print(return_all_dists_to_process_and_params())

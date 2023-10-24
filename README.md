@@ -16,17 +16,21 @@ Prochaines choses à dev :
 - retravailler la creation des descriptions des videos pour etre en accord avec les droits d'auteurs✅
 => voir quels dist doivent tagger les comptes ✅
 
-- réorganiser le create content pour pouvoir passer des params de montage directement dans le fichier arc ✅
+- réorganiser le create content pour pouvoir passer des params de montage ✅ directement dans le fichier arc ✅
 - terminer le create content ✅
 
 - changer tous ce qui est impacté par les fichiers toml ✅
 
 - résoudre le problème des logs qui ne vont pas dans le bon fichierfichier ✅
 
+- résoudre le probleme des cuts videos ✅
+
+- ecrire une fonction clear_input pour le tiktok uploader ✅
+
+- remettre tout à zéro, db, content, etc
+
 - fichier pour pouvoir tout controler
 
-- résoudre le probleme des cuts videos
+- passer quelques heures à tous débogguer, tout tester
 
-- passer quelques heures à tous débogguer
-
-- tous tester
+- process content by dist platform
