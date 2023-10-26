@@ -36,7 +36,7 @@ class InstaScrapper:
         )
         
     def __load_past_videos(self):
-        return data_manager.select_id_filename_by_src(self.channel_name, 'instagram')
+        return data_manager.select_id_filename_by_src(self.channel_name, 'instagram', self.dist_platform)
     
     def __download_video(self):
         already_downloaded = self.__load_past_videos()
@@ -44,6 +44,7 @@ class InstaScrapper:
         for post in profile.get_posts():
             if post.is_video:
                 if not post.shortcode in already_downloaded:
+                    if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
                     self.dw.download_post(post, target=self.channel_name)
                     logger.info(f"Downloaded '{post.shortcode}'")
                     data_manager.insert_content_data(

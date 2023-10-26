@@ -43,7 +43,7 @@ class TikTokScraper(AbstractScrapper):
     def __get_links(self):
         url = f"https://www.tiktok.com/{self.channel_name}"
         
-        old_videos_id = data_manager.select_id_filename_by_src(self.channel_name, 'tiktok')
+        old_videos_id = data_manager.select_id_filename_by_src(self.channel_name, 'tiktok', self.dist_platform)
         
         self.driver.get(url)
         time.sleep(USER_WAITING_TIME)
@@ -69,56 +69,59 @@ class TikTokScraper(AbstractScrapper):
         return new_id, all_video_content
         
     def __download_video(self, all_video_content, id_):
-        url = f"https://www.tiktok.com/@{self.channel_name}/video/{id_}"
-        session = requests.Session()
-        server_url = 'https://musicaldown.com/'
-        headers = {
-            'authority': 'musicaldown.com',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'accept-language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
-            'dnt': '1',
-            'sec-ch-ua': '"Not?A_Brand";v="99", "Opera";v="97", "Chromium";v="111"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'sec-fetch-dest': 'document',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-site': 'none',
-            'sec-fetch-user': '?1',
-            'upgrade-insecure-requests': '1',
-            'user-agent': self.get_headers()["User-Agent"]
-        }
-        session.headers.update(headers)
-        request = session.get(server_url)
-        data = {}
-        parse = BeautifulSoup(request.text, 'html.parser')
-        get_all_input = parse.findAll('input')
-        for i in get_all_input:
-            if i.get("id") == "link_url":
-                data[i.get("name")] = url
-            else:
-                data[i.get("name")] = i.get("value")
-        post_url = server_url + "id/download"
-        req_post = session.post(post_url, data=data, allow_redirects=True)
-
-        logger.info(f"Post response = {req_post.status_code} for {id_}")
-
-        get_all_blank = BeautifulSoup(req_post.text, 'html.parser').findAll('a', attrs={'target': '_blank'})
-        download_link = get_all_blank[0].get('href')
-        get_content = requests.get(download_link, headers=self.get_headers(), allow_redirects=True)
-        with open(os.path.join("content", "tiktok", f"{id_}.mp4"), 'wb') as f: f.write(get_content.content)
+        path = os.path.join("content", "tiktok", f"{id_}.mp4")
         
+        if not os.path.exists(path):
+            url = f"https://www.tiktok.com/@{self.channel_name}/video/{id_}"
+            session = requests.Session()
+            server_url = 'https://musicaldown.com/'
+            headers = {
+                'authority': 'musicaldown.com',
+                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'accept-language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
+                'dnt': '1',
+                'sec-ch-ua': '"Not?A_Brand";v="99", "Opera";v="97", "Chromium";v="111"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'document',
+                'sec-fetch-mode': 'navigate',
+                'sec-fetch-site': 'none',
+                'sec-fetch-user': '?1',
+                'upgrade-insecure-requests': '1',
+                'user-agent': self.get_headers()["User-Agent"]
+            }
+            session.headers.update(headers)
+            request = session.get(server_url)
+            data = {}
+            parse = BeautifulSoup(request.text, 'html.parser')
+            get_all_input = parse.findAll('input')
+            for i in get_all_input:
+                if i.get("id") == "link_url":
+                    data[i.get("name")] = url
+                else:
+                    data[i.get("name")] = i.get("value")
+            post_url = server_url + "id/download"
+            req_post = session.post(post_url, data=data, allow_redirects=True)
+
+            logger.info(f"Post response = {req_post.status_code} for {id_}")
+
+            get_all_blank = BeautifulSoup(req_post.text, 'html.parser').findAll('a', attrs={'target': '_blank'})
+            download_link = get_all_blank[0].get('href')
+            get_content = requests.get(download_link, headers=self.get_headers(), allow_redirects=True)
+            with open(os.path.join("content", "tiktok", f"{id_}.mp4"), 'wb') as f: f.write(get_content.content)
+            
         dist_account = utils.share_to_account(self.ARC.get_dist_by_pool(self.pool))
-        
+            
         data_manager.insert_content_data('tiktok',
-                                         self.channel_name, 
-                                         self.dist_platform,
-                                         dist_account, 
-                                         self.pool, 
-                                         self.role,
-                                         f"content/tiktok/{id_}.mp4",
-                                         id_, all_video_content[id_]["description"],
-                                         all_video_content[id_]["tags"], 
-                                         False
+                                        self.channel_name, 
+                                        self.dist_platform,
+                                        dist_account, 
+                                        self.pool, 
+                                        self.role,
+                                        f"content/tiktok/{id_}.mp4",
+                                        id_, all_video_content[id_]["description"],
+                                        all_video_content[id_]["tags"], 
+                                        False
                                         )
         
 

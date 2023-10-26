@@ -65,8 +65,8 @@ def get_stat_by_dist(cursor : sqlite3.Cursor):
             cursor.execute("""SELECT dist_account, COUNT(*) FROM data_content WHERE is_published = 1 GROUP BY dist""").fetchall())
 
 @sql_connect('data/database.db')
-def select_id_filename_by_src(cursor : sqlite3.Cursor, src_account : str, src_platform : str):
-    return list(set([d[0] for d in cursor.execute(f"SELECT id_filename FROM data_content WHERE source_account = '{src_account}' AND source_platform = '{src_platform}'").fetchall()]))
+def select_id_filename_by_src(cursor : sqlite3.Cursor, src_account : str, src_platform : str, for_dist_platform : str):
+    return list(set([d[0] for d in cursor.execute(f"SELECT id_filename FROM data_content WHERE source_account = '{src_account}' AND source_platform = '{src_platform}' AND dist_platform = '{for_dist_platform}'").fetchall()]))
 
 
 #Database Management of sources
@@ -197,7 +197,12 @@ def is_processed(cursor_database : sqlite3.Cursor, id_filename : str) :
 def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days : int = 3):
     selection = cursor_upadte.execute("SELECT updated_time FROM src_update WHERE src = ?", (src_account,)).fetchone()
     return datetime.now() > datetime.strptime(selection[0], '%Y-%m-%d %H:%M:%S.%f') + timedelta(days = delta_days)
-    
+
+@sql_connect("data/database.db")
+def is_removable(cursor_database : sqlite3.Cursor, filepath : str):
+    pass
+
+
 #Database Management of pools
 
 @sql_connect('data/update_pools.db')

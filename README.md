@@ -35,18 +35,33 @@ Prochaines choses à dev :
 
 - ecrire une fonction clear_input pour le tiktok uploader ✅
 
-- remettre tout à zéro, db, content, etc
+- remettre tout à zéro, db, content, etc ✅
 
-- fichier pour pouvoir tout controler
+- fichier pour pouvoir tous les contrôler
 
 - passer quelques heures à tous débogguer, tout tester
 
 
-- revoir le systeme de logs
+- revoir le systeme de logs ✅
 
+
+- revoir le systeme de cut video ✅
+
+
+
+
+contact.histoireincroyable@gmail.com
 
 
 Problème :
-- j'ai codé le is_scrappable mais pas le mettre tout de suite
+- j'ai codé le is_scrappable mais pas le mettre tout de suite ✅
 - Problème avec le update_one_dist 
-- probleme avec le video processing
+- probleme avec le video processing ✅
+
+
+
+
+**DISCLAIMER - The sole purpose of this Youtube channel is to provide viewers with cool music and promote the work of the artist(s). The channel was created for personal enjoyment and I do not take credit or make money from the artists work. Please feel free to contact me if you are unhappy with any particular video upload and I will be happy to take it down, rather than reporting the whole group as this will take away people's enjoyment of other videos across the channel. Thank You**
+
+
+
