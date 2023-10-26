@@ -2,8 +2,8 @@ import sqlite3
 from random import randint
 from datetime import datetime, timedelta
 import logging
-
-logger = logging.getLogger(__name__)
+from logging_config import logger
+logger.name = __name__
 
 def sql_connect(relativ_path_to_database : str):
     def wrapper1(func):
@@ -192,7 +192,11 @@ def is_published(cursor_database : sqlite3.Cursor, id_filename : str) :
 @sql_connect("data/database.db")
 def is_processed(cursor_database : sqlite3.Cursor, id_filename : str) : 
     cursor_database.execute(f"UPDATE data_content SET is_processed = 1 WHERE id_filename = '{id_filename}'")
-    
+
+@sql_connect("data/update_src.db")
+def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days : int = 3):
+    selection = cursor_upadte.execute("SELECT updated_time FROM src_update WHERE src = ?", (src_account,)).fetchone()
+    return datetime.now() > datetime.strptime(selection[0], '%Y-%m-%d %H:%M:%S.%f') + timedelta(days = delta_days)
     
 #Database Management of pools
 

@@ -1,9 +1,17 @@
 Règles à respecter pour l'architecture :
+
 - les pools doivent être uniques
+
 - les dist_accounts doivent être uniques par leur nom
+
 - les comptes à scrapper doivent être dans un seul pool
+
 - un unique dist account tiktok doit être associé à un compte google
+
 - jusqu'à 100 dist accounts ytb peuvent être associés à un compte google
+
+- INTERDIT D'AVOIR LE MEME NOM DE CHAINES YTB ET TIKTOK
+
 
 => pour des raisons de droits d'auteurs on va commencer pas mettre du contenu depuis instagram sur tiktok 
 et du contenu de tiktok sur ytb
@@ -33,4 +41,12 @@ Prochaines choses à dev :
 
 - passer quelques heures à tous débogguer, tout tester
 
-- process content by dist platform
+
+- revoir le systeme de logs
+
+
+
+Problème :
+- j'ai codé le is_scrappable mais pas le mettre tout de suite
+- Problème avec le update_one_dist 
+- probleme avec le video processing

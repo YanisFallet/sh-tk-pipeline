@@ -3,7 +3,6 @@ import json
 import toml
 import sys
 import random
-import logging
 
 from tqdm import tqdm
 from moviepy.video.fx.crop import crop
@@ -14,12 +13,12 @@ from skimage.filters import gaussian
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import data_manager
 from arc_manager import ArcManagement
-
-logger = logging.getLogger(__name__)
+from logging_config import logger
+logger.name = __name__
 
 constants = toml.load("core/create_content/constants.toml")
 
-def return_all_dists_to_process_and_params() -> tuple[list[str], dict]:
+def return_all_dists_to_process_and_params() -> tuple[dict, dict, dict]:
     l = ["tiktok", "youtube", "instagram"]
     p_l = [(i, j) for i in l for j in l]
     
@@ -34,8 +33,9 @@ def return_all_dists_to_process_and_params() -> tuple[list[str], dict]:
                 all_dists[platform].extend(dist)
             else:
                 all_dists[platform] = dist
-    print(all_dists)
-    dist_to_process = []
+
+    dist_to_process = {}
+    dist_to_not_process = {}
     dist_params = {}
     for platform in all_dists.keys():
         file = f"arc/dist/{platform}.json"
@@ -45,10 +45,12 @@ def return_all_dists_to_process_and_params() -> tuple[list[str], dict]:
             for account in all_dists[platform]:
                 resp = dist.get(account, None)
                 if resp is not None and resp.get("editing_options", None).get("edit", None) == True:
-                    dist_to_process.append(account)
+                    dist_to_process[platform] = dist_to_process.get(platform, []) + [account]
                     dist_params[account] = resp.get("editing_options", None)
+                else:
+                    dist_to_not_process[platform] = dist_to_not_process.get(platform, []) + [account]
 
-    return dist_to_process, dist_params
+    return dist_to_not_process, dist_to_process, dist_params
 
 @data_manager.sql_connect("data/database.db")
 def load_pools_video(cursor):
@@ -116,7 +118,7 @@ def generate_pool_video(time_to_fill : float, width : float, height : float, bor
 
 
 @data_manager.sql_connect("data/database.db")
-def videos_processing_by_account(cursor_database, dist_account : str, params : dict):
+def videos_processing_by_account(cursor_database, dist_account : str, params : dict, to_process : bool = True):
     
     selection = cursor_database.execute(f"""
         SELECT id_filename, filepath, dist_account FROM data_content
@@ -126,21 +128,45 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
     """).fetchall()
     
     for content in tqdm(selection, desc=f"Processing videos for {dist_account}", unit="video"):
-        process_content(filepath=content[1], params=params) 
+        if to_process:
+            process_content(filepath=content[1], params=params) 
         
         logger.info(f"Video processing done for {content[1]} of {dist_account}")
         data_manager.is_processed(id_filename=content[0])
         
     logger.info(f"Videos processing done for {dist_account}")
 
-def videos_processing(number_of_videos : int):
+def videos_processing():
     
-    all_dist_to_process, dist_params = return_all_dists_to_process_and_params()
+    dist_to_not_process, dist_to_process, dist_params = return_all_dists_to_process_and_params()
     
-    for dist_account, params in zip(all_dist_to_process, dist_params.keys()):
-        videos_processing_by_account(dist_account=dist_account, params = dist_params[params])
+    platforms = ["tiktok", "youtube", "instagram"]
     
-    logger.info(f"Videos processing done for {all_dist_to_process}")
+    for platform in platforms:
+        n_dist_to_not_process = dist_to_not_process.get(platform, [])
+        n_dist_to_process = dist_to_process.get(platform, [])
+        
+        for dist_account in n_dist_to_process:
+            videos_processing_by_account(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
+
+        for dist_account in n_dist_to_not_process:
+            videos_processing_by_account(dist_account=dist_account, params = {}, to_process=False)
+    
+    logger.info(f"Videos processing done for all accounts")
+    
+def videos_processing_by_dist_platform(dist_platform : str):
+    dist_to_not_process, dist_to_process, dist_params = return_all_dists_to_process_and_params()
+    
+    n_dist_to_not_process = dist_to_not_process.get(dist_platform, [])
+    n_dist_to_process = dist_to_process.get(dist_platform, [])
+    
+    for dist_account in n_dist_to_process:
+        videos_processing_by_account(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
+
+    for dist_account in n_dist_to_not_process:
+        videos_processing_by_account(dist_account=dist_account, params = {}, to_process=False)
+    
+    logger.info(f"Videos processing done for all accounts of {dist_platform}")
     
 
 if __name__ == "__main__":

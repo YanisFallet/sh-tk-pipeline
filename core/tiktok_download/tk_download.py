@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import logging
 from functools import partial
 from concurrent.futures import ThreadPoolExecutor
 
@@ -13,6 +12,8 @@ from abstract_scrapper import AbstractScrapper , get_driver
 from arc_manager import ArcManagement
 import data_manager
 import utils
+from logging_config import logger
+logger.name = __name__
 
 USER_WAITING_TIME = 2
 
@@ -99,7 +100,7 @@ class TikTokScraper(AbstractScrapper):
         post_url = server_url + "id/download"
         req_post = session.post(post_url, data=data, allow_redirects=True)
 
-        logging.info(f"Post response = {req_post.status_code} for {id_}")
+        logger.info(f"Post response = {req_post.status_code} for {id_}")
 
         get_all_blank = BeautifulSoup(req_post.text, 'html.parser').findAll('a', attrs={'target': '_blank'})
         download_link = get_all_blank[0].get('href')
@@ -122,12 +123,12 @@ class TikTokScraper(AbstractScrapper):
         
 
     def __optimized_download_video(self, new_id, all_video_content):
-        logging.info(f"Found {len(new_id)} new videos for {self.channel_name}")
+        logger.info(f"Found {len(new_id)} new videos for {self.channel_name}")
         with ThreadPoolExecutor(max_workers=10) as executor:
             executor.map(partial(self.__download_video, all_video_content), new_id)
             
     def __non_optimized_download_video(self, new_id, all_video_content):
-        logging.info(f"Found {len(new_id)} new videos for {self.channel_name}")
+        logger.info(f"Found {len(new_id)} new videos for {self.channel_name}")
         for id_ in new_id:
             self.__download_video(all_video_content, id_)
 

@@ -10,6 +10,7 @@ from tiktok_download import tk_download
 from insta_download import insta_download
 
 from ytb_uploader.ytb_uploader import YoutubeUploader
+from create_content.create_content import videos_processing
 
 def create_all_tables():
     if not os.path.exists(os.path.join("data", "database.db")):
@@ -47,6 +48,8 @@ def update_traj_tiktok_to_ytb():
     driver.quit()
             
     utils.update_share_to_account(src_p="tiktok", dist_p="youtube")
+    
+    videos_processing()
 
     #cooldown
     time.sleep(5)
@@ -77,6 +80,8 @@ def update_traj_instagram_to_ytb():
         
     utils.update_share_to_account(src_p="instagram", dist_p="youtube")
     
+    videos_processing()
+    
     time.sleep(5)
                 
     google_accounts = ARC.get_google_accounts()
@@ -91,6 +96,11 @@ def update_traj_instagram_to_ytb():
     
     
 def update_traj_instagram_to_tiktok():
+    ...
+    
+    
+    
+def update_traj_tiktok_to_tiktik():
     ...
 
 if __name__ == '__main__':

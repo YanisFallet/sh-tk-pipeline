@@ -9,14 +9,16 @@ from pathlib import Path
 
 from selenium.webdriver.common.by import By
 
-from metadata import load_metadata
+from core.tiktok_uploader.metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import data_manager
 from abstract_scrapper import get_driver
 from arc_manager import ArcManagement
 
-logger = logging.getLogger(__name__)
+from logging_config import logger
+logger.name = __name__
+logger.info("TiktokUploader loaded") 
 
 constants = toml.load("core/tiktok_uploader/constants.toml")
 
@@ -85,12 +87,6 @@ class TiktokUplaoder:
                 self.__upload(metadata_video)
                 time.sleep(3*constants["USER_WAITING_TIME"])
     
-    def test(self, me):
-        self.__get_driver_t()
-        self.__get_to_tiktok_upload()
-        time.sleep(2*constants["USER_WAITING_TIME"])
-        self.__upload(me)
-        self.__quit()
         
     def __quit(self):
         self.browser.close()
@@ -104,19 +100,10 @@ class TiktokUplaoder:
             logging.info(f"Upload to Tiktok for {self.dist_account[0]} finished")
             self.__quit()
         else:
-            logging.info(f"Upload to Tiktok for {self.dist_account[0]} not uplaodable")
-            self.__quit()
+            logging.info(f"Upload to Tiktok for {self.dist_account[0]} not available")
         
 if __name__ == "__main__":
-    a = TiktokUplaoder("shortsfactory33", "tiktok")
-    metadata_video = {
-        "id_filename" : "7290165867478846752",
-        "filepath" : "t/7290165867478846752.mp4",
-        "caption" : "test caption",
-        "dist_account" : "ViesHorsDuCommun"
-    }
-    a.test(metadata_video)
-
+    ...
 
         
         

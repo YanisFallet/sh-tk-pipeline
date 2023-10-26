@@ -20,8 +20,8 @@ import utils
 import arc_manager
 import data_manager
 from abstract_scrapper import get_driver
-
-logger = logging.getLogger(__name__)
+from logging_config import logger
+logger.name = __name__
 
 constants = toml.load("core/ytb_uploader/constants.toml")
 
@@ -213,32 +213,35 @@ class YoutubeUploader:
 
         
     def run(self):
-        #initialize browser
-        self.get_driver_y()
-        #go to youtube studio
-        time.sleep(constants["USER_WAITING_TIME"])
-        self.__go_to_ytb_studio()
-        time.sleep(constants["USER_WAITING_TIME"])
-        #current channel situation
-        current_channel = self.__get_which_channel()
-        time.sleep(constants["USER_WAITING_TIME"])
-        metadata_channel = load_metadata(dist_account = current_channel, platform="youtube")
-
-        if self.__minimum_upload(metadata_channel=metadata_channel) and data_manager.is_uploadable(current_channel, platform="youtube", count = False):
-            self.__bulk_upload(metadata_channel)
-            data_manager.update_one_dist(dist_account = current_channel, platform = "youtube")
+        must_run  = [data_manager.is_uploadable(dist_account, platform="youtube", count = False) for dist_account in self.all_dist_accounts]
         
-        self.all_dist_accounts.remove(current_channel)
-        for channel in self.all_dist_accounts:
-            metadata_channel = load_metadata(dist_account = channel, platform="youtube")
-            
-            if self.__minimum_upload(metadata_channel=metadata_channel) and data_manager.is_uploadable(channel, platform="youtube", count = False):
-                switched = self.__switch_channel(channel)
-                if switched:
-                    self.__bulk_upload(metadata_channel)
-                    data_manager.update_one_dist(dist_account = channel, platform = "youtube")
+        if any(must_run):
+            #initialize browser
+            self.get_driver_y()
+            #go to youtube studio
+            time.sleep(constants["USER_WAITING_TIME"])
+            self.__go_to_ytb_studio()
+            time.sleep(constants["USER_WAITING_TIME"])
+            #current channel situation
+            current_channel = self.__get_which_channel()
+            time.sleep(constants["USER_WAITING_TIME"])
+            metadata_channel = load_metadata(dist_account = current_channel, platform="youtube")
 
-        self.__quit()
+            if self.__minimum_upload(metadata_channel=metadata_channel) and data_manager.is_uploadable(current_channel, platform="youtube", count = False):
+                self.__bulk_upload(metadata_channel)
+                data_manager.update_one_dist(dist_account = current_channel, platform = "youtube")
+            
+            self.all_dist_accounts.remove(current_channel)
+            for channel in self.all_dist_accounts:
+                metadata_channel = load_metadata(dist_account = channel, platform="youtube")
+                
+                if self.__minimum_upload(metadata_channel=metadata_channel) and data_manager.is_uploadable(channel, platform="youtube", count = False):
+                    switched = self.__switch_channel(channel)
+                    if switched:
+                        self.__bulk_upload(metadata_channel)
+                        data_manager.update_one_dist(dist_account = channel, platform = "youtube")
+
+            self.__quit()
     
     def __quit(self):
         self.browser.quit()

@@ -1,6 +1,5 @@
 import os
 import sys
-import logging
 
 from instaloader import Instaloader, Profile
 
@@ -8,12 +7,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import utils
 import data_manager
 from arc_manager import ArcManagement
+from logging_config import logger
+logger.name = __name__
 
 USER_WAITING_TIME = 2
 
-logging.basicConfig(level=logging.INFO, filemode="a", filename="logs/journal.log")
-logger = logging.getLogger(__name__)
-logger.info("InstaScrapper loaded")
 
 class InstaScrapper:
     
