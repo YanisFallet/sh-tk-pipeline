@@ -104,12 +104,12 @@ class YoutubeUploader:
         video_metadata[constants["VIDEO_SCHEDULE"]] = data_manager.schedule_video(
             dist_account = video_metadata[constants["VIDEO_ACCOUNT"]],
             platform = "youtube",
-            id_filename = video_metadata[constants["VIDEO_ID_FILENAME"]]
+            id_table=video_metadata["id"]
         )
         
         absolute_path_video = os.path.join(Path.cwd(), video_path)
         
-        utils.cut_videos(absolute_path_video)
+        utils.speedup_video(absolute_path_video)
 
         time.sleep(constants["USER_WAITING_TIME"])
         
@@ -194,10 +194,11 @@ class YoutubeUploader:
         time.sleep(2*constants["USER_WAITING_TIME"])
         self.browser.find_element(By.XPATH, constants["CLOSE_BTN"]).click()
         logger.debug("Published the video {video_path} on Youtube")
-        
-        data_manager.is_published(id_filename=video_metadata[constants["VIDEO_ID_FILENAME"]], platform="youtube")
+                
+        data_manager.is_published(id_table=video_metadata["id"])
 
-        os.remove(absolute_path_video)
+        if data_manager.is_removable(video_metadata["id"], video_path):
+            os.remove(absolute_path_video)
         
         return True
     

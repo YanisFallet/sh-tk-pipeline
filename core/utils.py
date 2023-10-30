@@ -42,12 +42,17 @@ def remove_non_bmp_characters(input_string):
             result += char
     return result
 
-def cut_videos(path : str, max_time : int = 60):
+def speedup_video(path : str, max_time : int = 59, overflow_time : int = 75):
     clip = VideoFileClip(path)
     duration = clip.duration
-    if duration > max_time:
-        clip.subclip(0, max_time).write_videofile("t/F.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
-        
+    if duration > max_time and duration < overflow_time:
+        coeff = duration / max_time + 0.05
+        clip.speedx(coeff).write_videofile(path, fps=24, codec="libx264", threads=2, preset="ultrafast")
+    elif duration > overflow_time:
+        coeff = duration / max_time + 0.05
+        v = clip.subclip(0, overflow_time)
+        v.speedx(coeff).write_videofile(path, fps=24, codec="libx264", threads=2, preset="ultrafast")
+    
 def get_dist_data(dist_account: str, platform: str):
     file_path = f"arc/dist/{platform}.json"
     if not os.path.exists(file_path):

@@ -12,7 +12,7 @@ import utils
 @data_manager.sql_connect("data/database.db")
 def load_metadata(cursor, dist_account : str, platform : str): 
     data = cursor.execute(f"""
-        SELECT filepath, id_filename, description, dist_account, dist_platform, source_account, source_platform  FROM data_content
+        SELECT id, filepath, id_filename, description, dist_account, dist_platform, source_account, source_platform  FROM data_content
         WHERE  is_published = 0
         AND is_processed = 1
         AND dist_account = '{dist_account}'
@@ -20,7 +20,8 @@ def load_metadata(cursor, dist_account : str, platform : str):
         AND role = 'content'
     """).fetchall()
     
-    build_dict_type = lambda filepath, id_filename, description, dist_account, dist_platform, source_account, source_platform : {
+    build_dict_type = lambda id_, filepath, id_filename, description, dist_account, dist_platform, source_account, source_platform : {
+            "id" : id_, 
             "filepath" : filepath,
             "id_filename" : id_filename,
             "caption" : build_description(description, dist_account ,dist_platform, source_account, source_platform),

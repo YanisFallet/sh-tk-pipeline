@@ -164,12 +164,12 @@ def is_uploadable(cursor : sqlite3.Cursor, dist_account : str, platform : str, c
         
         
 @sql_connect('data/database.db')
-def schedule_video(cursor_database : sqlite3.Cursor, dist_account : str, platform : str, id_filename : str, edge : int = 10):
+def schedule_video(cursor_database : sqlite3.Cursor, dist_account : str, platform : str, id_table : str, edge : int = 10):
     last_scheduled = cursor_database.execute(f"SELECT id, schedule FROM data_content WHERE dist_account = '{dist_account}' AND dist_platform = '{platform}' AND schedule is not NULL ORDER BY schedule DESC LIMIT 1").fetchone()
 
     if last_scheduled is None:
         r_date = datetime.now() + timedelta(minutes = edge)
-        cursor_database.execute(f"UPDATE data_content SET schedule = '{r_date}' WHERE id_filename = '{id_filename}'")
+        cursor_database.execute(f"UPDATE data_content SET schedule = '{r_date}' WHERE id = '{id_table}'")
         logger.info(f"First video scheduled to {r_date} for dist '{dist_account}' on '{platform}'")
         return r_date
     else:
@@ -177,21 +177,21 @@ def schedule_video(cursor_database : sqlite3.Cursor, dist_account : str, platfor
         th_date = last_scheduled_D + timedelta(days = 1, minutes = edge)
         if th_date < datetime.now():
             r_date = datetime.now() + timedelta(minutes = edge)
-            cursor_database.execute(f"UPDATE data_content SET schedule = '{r_date}' WHERE id_filename = '{id_filename}'")
-            logger.info(f"Video scheduled '{id_filename}' to {r_date} for dist '{dist_account}' on '{platform}'")
+            cursor_database.execute(f"UPDATE data_content SET schedule = '{r_date}' WHERE id = '{id_table}'")
+            logger.info(f"Video scheduled '{id_table}' to {r_date} for dist '{dist_account}' on '{platform}'")
             return r_date
         else : 
-            cursor_database.execute(f"UPDATE data_content SET schedule = '{th_date}' WHERE id_filename = '{id_filename}'")
-            logger.info(f"Video scheduled '{id_filename}' to {th_date} for dist '{dist_account}' on '{platform}'")
+            cursor_database.execute(f"UPDATE data_content SET schedule = '{th_date}' WHERE id = '{id_table}'")
+            logger.info(f"Video scheduled '{id_table}' to {th_date} for dist '{dist_account}' on '{platform}'")
             return th_date
 
 @sql_connect("data/database.db")
-def is_published(cursor_database : sqlite3.Cursor, id_filename : str) : 
-    cursor_database.execute(f"UPDATE data_content SET is_published = 1 WHERE id_filename = '{id_filename}'")
+def is_published(cursor_database : sqlite3.Cursor, id_table : int) : 
+    cursor_database.execute(f"UPDATE data_content SET is_published = 1 WHERE id = '{id_table}'")
 
 @sql_connect("data/database.db")
-def is_processed(cursor_database : sqlite3.Cursor, id_filename : str) : 
-    cursor_database.execute(f"UPDATE data_content SET is_processed = 1 WHERE id_filename = '{id_filename}'")
+def is_processed(cursor_database : sqlite3.Cursor, id_table : int) : 
+    cursor_database.execute(f"UPDATE data_content SET is_processed = 1 WHERE id = '{id_table}'")
 
 @sql_connect("data/update_src.db")
 def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days : int = 3):
@@ -199,8 +199,12 @@ def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days 
     return datetime.now() > datetime.strptime(selection[0], '%Y-%m-%d %H:%M:%S.%f') + timedelta(days = delta_days)
 
 @sql_connect("data/database.db")
-def is_removable(cursor_database : sqlite3.Cursor, filepath : str):
-    pass
+def is_removable(cursor_database : sqlite3.Cursor, id_table : str, filepath : str):
+    selection = cursor_database.execute(f"SELECT id FROM data_content WHERE filepath = '{filepath}' AND is_published = 0 ").fetchall()
+    if len(selection) >= 1:
+        return False
+    else:
+        return True
 
 
 #Database Management of pools

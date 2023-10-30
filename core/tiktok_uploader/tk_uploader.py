@@ -3,7 +3,6 @@ import sys
 import time
 import json
 import toml
-import logging
 from pathlib import Path
 
 
@@ -18,7 +17,7 @@ from arc_manager import ArcManagement
 
 from logging_config import logger
 logger.name = __name__
-logger.info("TiktokUploader loaded") 
+
 
 constants = toml.load("core/tiktok_uploader/constants.toml")
 
@@ -73,10 +72,11 @@ class TiktokUplaoder:
         self.browser.find_element(By.XPATH, constants["POST_BUTTON"]).click()
         time.sleep(constants["USER_WAITING_TIME"])
         
-        data_manager.is_published(id_filename=metadata_video[constants["ID_FILENAME"]])
+        data_manager.is_published(id_table=metadata_video[constants["ID"]])
         logger.info(f"Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
         
-        os.remove(absolute_path)
+        if data_manager.is_removable(id_table=metadata_video[constants["ID"]], filepath=metadata_video[constants["FILEPATH"]]):
+            os.remove(absolute_path)
         return True
     
     
@@ -97,10 +97,10 @@ class TiktokUplaoder:
             time.sleep(constants["USER_WAITING_TIME"])
             metadata_channel = load_metadata(self.dist_account[0], self.source_platform)    
             self.__bulk_upload(metadata_channel=metadata_channel)
-            logging.info(f"Upload to Tiktok for {self.dist_account[0]} finished")
+            logger.info(f"Upload to Tiktok for {self.dist_account[0]} finished")
             self.__quit()
         else:
-            logging.info(f"Upload to Tiktok for {self.dist_account[0]} not available")
+            logger.info(f"Upload to Tiktok for {self.dist_account[0]} not available")
         
 if __name__ == "__main__":
     ...

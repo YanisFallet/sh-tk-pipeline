@@ -45,11 +45,25 @@ Prochaines choses à dev :
 - revoir le systeme de logs ✅
 
 
-- revoir le systeme de cut video ✅
+- revoir le systeme de cut video de tiktok vers youtube
+
+- fonction is_removable 
+
+
+=> cut ou accelerer la video peut être une option pour les videos tiktok vers youtube
+=> concaténer les videos instagram vers tiktok
 
 
 
+=> on a un problème avec le fait d'avoir des doublons de videos => on utilise souvent le filepath pour les identifier
+mais si on a deux videos avec le même filepath mais pas le même nom, on va avoir un problème
 
+=> changer les load_metadata pour avoir les id autoincrementés qui sont uniques
+
+=> rallonger les videos de instagram vers tiktok en ralentissant ou en concaténant
+=> tout implémenter dans le create content
+
+=> remove apres is_published
 contact.histoireincroyable@gmail.com
 
 
@@ -59,9 +73,23 @@ Problème :
 - probleme avec le video processing ✅
 
 
+test : 
+- uplaod braintv sur youtube (sans modif mais avec les cut) et sur tiktok (avec modif mais sans cut)
+- upload un compte tiktok sur youtube
+- get_pool de contenu satisfaisant sur instagram et même tiktok 
+- upload un compte instagram sur tiktok => créer l'algo pour compiler des videos instagram
 
 
-**DISCLAIMER - The sole purpose of this Youtube channel is to provide viewers with cool music and promote the work of the artist(s). The channel was created for personal enjoyment and I do not take credit or make money from the artists work. Please feel free to contact me if you are unhappy with any particular video upload and I will be happy to take it down, rather than reporting the whole group as this will take away people's enjoyment of other videos across the channel. Thank You**
+energiedechampion : compte instagram
 
+
+=> pour l'instant la traj instagram to tiktokest un peu plus complexe car il faudrait concaténer les videos pou rpouvoir etre monétiser sur tiktok et cela pose des problemes sur ce que cela produit sur les bdd car quand on va upload une video il va s'agir en realité de plusieurs videos en meme temps
+
+**DISCLAIMER - The sole purpose of this Youtube channel is to provide viewers with cool content and promote the work of the creator. The channel was created for personal enjoyment and I do not take credit. Please feel free to contact me if you are unhappy with any particular video upload and I will be happy to take it down, rather than reporting the whole group as this will take away people's enjoyment of other videos across the channel. Thank You**
+
+site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseaux-sociaux/
+
+
+=> étendre le business à pinterest twitter et facebook pour un maximum d'argent
 
 

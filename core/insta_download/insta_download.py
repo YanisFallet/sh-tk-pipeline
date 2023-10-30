@@ -45,8 +45,8 @@ class InstaScrapper:
             if post.is_video:
                 if not post.shortcode in already_downloaded:
                     if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
-                    self.dw.download_post(post, target=self.channel_name)
-                    logger.info(f"Downloaded '{post.shortcode}'")
+                        self.dw.download_post(post, target=self.channel_name)
+                        logger.info(f"Downloaded '{post.shortcode}'")
                     data_manager.insert_content_data(
                         source_account = self.channel_name,
                         source_platform = 'instagram',
