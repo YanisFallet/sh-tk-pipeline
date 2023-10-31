@@ -64,39 +64,55 @@ def pick_a_color():
          (255, 255, 107), (128, 0, 128), (0, 142, 142)]
     return random.choice(l)
 
-def blur_video(image):
-    return gaussian(image.astype(float), sigma=0.7)
+def blur_video(image, sigma=0.2):
+    return gaussian(image.astype(float), sigma=sigma)
+
+def speedup_video(video : VideoFileClip, max_time : int = 59, overflow_time : int = 75):
+    duration = video.duration
+    if duration > max_time and duration < overflow_time:
+        coeff = duration / max_time
+        return video.speedx(coeff)
+    elif duration > overflow_time:
+        coeff = overflow_time / max_time
+        v = video.subclip(0, overflow_time)
+        return v.speedx(coeff)
 
 def process_content(filepath : str, params : dict = {}) -> bool:
     video = VideoFileClip(filename=filepath)
+    if video is None:
+        logger.warning(f"Video {filepath} not found or video damaged")
+        return False
+    
+    os.remove(filepath)
     width, height = video.w, video.h
     
     border = params.get("border", None)
-    
-    if border:
-        if params.get("color", None) is not None:
-            color = params["color"]
-        else:
-            color = pick_a_color()
-
+    color = params.get("color", pick_a_color()) if border else None
     margin_size = params.get("margin_size", 9)
+    featuring_video = params.get("featuring_video", False)
     
-    if params.get("featuring_video", None) == True:
+    if params.get("max_duration", None) is not None:
+        video = speedup_video(video, max_time=params["max_duration"])
+    
+    if featuring_video:
         pool_video = generate_pool_video(video.duration, width, (1-constants["SIZE_FACTOR"] + 0.2)*height, border = border, margin_size=margin_size, color=color)
         n_video = crop(video, width=width, height=height*constants["SIZE_FACTOR"], x_center=width/2, y_center=height/2)
     else : 
         n_video = video
+        
+    n_video = n_video.fl_image(blur_video, params.get("coeff_blur", 0.2))
     
-    n_video = n_video.fl_image(blur_video)
-    
-    if border and params.get("featuring_video", None) == True:
-        clips_array([[n_video], [pool_video]]).fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color).write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
-    elif params.get("featuring_video", None) == True:
-        clips_array([[n_video], [pool_video]]).write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
+    if featuring_video:
+        clips = clips_array([[n_video], [pool_video]])
+        if border:
+            clips = clips.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color)
     elif border:
-        n_video.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color).write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
+        clips = n_video.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color)
     else:
-        n_video.write_videofile(f"t/featured.mp4", fps=24, codec="libx264", threads=4, preset="ultrafast")
+        clips = n_video
+    clips.write_videofile(filepath, fps=35, codec="libx264")
+    
+    return True
 
 def generate_pool_video(time_to_fill : float, width : float, height : float, border : bool, margin_size = 7, color : tuple[int] = (0,0,0)) -> VideoFileClip:
     filled = False
@@ -128,11 +144,14 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
     """).fetchall()
     
     for content in tqdm(selection, desc=f"Processing videos for {dist_account}", unit="video"):
-        if to_process:
-            process_content(filepath=content[1], params=params) 
+        processed = False
         
-        logger.info(f"Video processing done for {content[1]} of {dist_account}")
-        data_manager.is_processed(id_filename=content[0])
+        if to_process:
+            processed = process_content(filepath=content[1], params=params) 
+        
+        if processed :
+            logger.info(f"Video processing done for {content[1]} of {dist_account}")
+            data_manager.is_processed(id_filename=content[0])
         
     logger.info(f"Videos processing done for {dist_account}")
 
@@ -171,3 +190,9 @@ def videos_processing_by_dist_platform(dist_platform : str):
 
 if __name__ == "__main__":
     print(return_all_dists_to_process_and_params())
+    filepath = "t/7295812605162147104.mp4"
+    p = {
+            "edit" : True,
+            "max_duration" : 59
+        }
+    process_content(filepath, p)

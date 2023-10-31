@@ -80,6 +80,13 @@ test :
 - upload un compte instagram sur tiktok => créer l'algo pour compiler des videos instagram
 
 
+le create_content bug un peu, il faut le debugguer
+=> il va falloir traîté les cas où les vidéos téléchargées sont pas bonnes => peut être les supprimer et les mettre en published True   
+
+
+=>sinon le tiktok scrapping fonctionne parfaitement
+=> remis à zéro
+
 energiedechampion : compte instagram
 
 

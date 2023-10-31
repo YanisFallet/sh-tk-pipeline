@@ -1,7 +1,7 @@
+import os
 import sqlite3
 from random import randint
 from datetime import datetime, timedelta
-import logging
 from logging_config import logger
 logger.name = __name__
 
@@ -199,12 +199,11 @@ def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days 
     return datetime.now() > datetime.strptime(selection[0], '%Y-%m-%d %H:%M:%S.%f') + timedelta(days = delta_days)
 
 @sql_connect("data/database.db")
-def is_removable(cursor_database : sqlite3.Cursor, id_table : str, filepath : str):
-    selection = cursor_database.execute(f"SELECT id FROM data_content WHERE filepath = '{filepath}' AND is_published = 0 ").fetchall()
-    if len(selection) >= 1:
-        return False
-    else:
-        return True
+def is_removable(cursor_database : sqlite3.Cursor, filepath : str):
+    count = cursor_database.execute(f"SELECT COUNT(id) FROM data_content WHERE filepath = ? AND is_published = 0", (filepath,)).fetchone()[0]
+    if count == 0:
+        os.remove(filepath)
+        logger.info(f"File '{filepath}' removed")
 
 
 #Database Management of pools

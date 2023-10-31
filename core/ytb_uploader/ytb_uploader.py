@@ -109,7 +109,6 @@ class YoutubeUploader:
         
         absolute_path_video = os.path.join(Path.cwd(), video_path)
         
-        utils.speedup_video(absolute_path_video)
 
         time.sleep(constants["USER_WAITING_TIME"])
         
@@ -197,8 +196,7 @@ class YoutubeUploader:
                 
         data_manager.is_published(id_table=video_metadata["id"])
 
-        if data_manager.is_removable(video_metadata["id"], video_path):
-            os.remove(absolute_path_video)
+        data_manager.is_removable(filepath=video_path)
         
         return True
     

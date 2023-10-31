@@ -75,8 +75,8 @@ class TiktokUplaoder:
         data_manager.is_published(id_table=metadata_video[constants["ID"]])
         logger.info(f"Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
         
-        if data_manager.is_removable(id_table=metadata_video[constants["ID"]], filepath=metadata_video[constants["FILEPATH"]]):
-            os.remove(absolute_path)
+        data_manager.is_removable(filepath=metadata_video[constants["FILEPATH"]])
+
         return True
     
     

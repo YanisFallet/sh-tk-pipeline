@@ -10,7 +10,7 @@ from tiktok_download import tk_download
 from insta_download import insta_download
 
 from ytb_uploader.ytb_uploader import YoutubeUploader
-from create_content.create_content import videos_processing
+from create_content.create_content import videos_processing, videos_processing_by_dist_platform
 
 def create_all_tables():
     if not os.path.exists(os.path.join("data", "database.db")):
@@ -49,7 +49,7 @@ def update_traj_tiktok_to_ytb():
             
     utils.update_share_to_account(src_p="tiktok", dist_p="youtube")
     
-    videos_processing()
+    videos_processing_by_dist_platform(dist_platform="youtube")
 
     #cooldown
     time.sleep(5)

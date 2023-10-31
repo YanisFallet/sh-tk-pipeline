@@ -41,17 +41,6 @@ def remove_non_bmp_characters(input_string):
         if ord(char) <= 0xFFFF:  # Vérifie si le point de code est dans le BMP
             result += char
     return result
-
-def speedup_video(path : str, max_time : int = 59, overflow_time : int = 75):
-    clip = VideoFileClip(path)
-    duration = clip.duration
-    if duration > max_time and duration < overflow_time:
-        coeff = duration / max_time + 0.05
-        clip.speedx(coeff).write_videofile(path, fps=24, codec="libx264", threads=2, preset="ultrafast")
-    elif duration > overflow_time:
-        coeff = duration / max_time + 0.05
-        v = clip.subclip(0, overflow_time)
-        v.speedx(coeff).write_videofile(path, fps=24, codec="libx264", threads=2, preset="ultrafast")
     
 def get_dist_data(dist_account: str, platform: str):
     file_path = f"arc/dist/{platform}.json"
