@@ -28,12 +28,12 @@ def reformat_json_files(directory_path):
                     data = json.load(f)
                 with open(file_path, "w") as f:
                     json.dump(data, f, indent=10, sort_keys=True)
-                    
-def share_to_account(list_accounts : list[str]):
-    if len(list_accounts) == 0:
-        return ""
-    else:
-        return random.choice(list_accounts)
+
+def share_to_account(dist_accounts : list) -> str:
+    if len(dist_accounts) == 0:
+        return None
+    else :
+        return random.choice(dist_accounts)
 
 def remove_non_bmp_characters(input_string):
     result = ""
@@ -66,8 +66,6 @@ def update_share_to_account(cursor, src_p : str, dist_p : str):
         dist = ARC.get_dist_by_pool(elem[1])
         dist_account = share_to_account(dist)
         cursor.execute("UPDATE data_content SET dist_account = ? WHERE id = ?", (dist_account, elem[0]))
-
-
 
 if __name__ == "__main__":
     pass

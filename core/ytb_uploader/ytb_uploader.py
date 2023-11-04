@@ -3,7 +3,6 @@ import sys
 import time
 import json
 import toml
-import logging
 import platform
 from datetime import datetime
 from pathlib import Path
@@ -21,7 +20,6 @@ import arc_manager
 import data_manager
 from abstract_scrapper import get_driver
 from logging_config import logger
-logger.name = __name__
 
 constants = toml.load("core/ytb_uploader/constants.toml")
 
@@ -115,7 +113,7 @@ class YoutubeUploader:
         self.browser.get(constants["YOUTUBE_UPLOAD_URL"])
         time.sleep(constants["USER_WAITING_TIME"])
         self.browser.find_element(By.XPATH, constants["INPUT_FILE_VIDEO"]).send_keys(absolute_path_video)
-        logger.debug(f"Attached Video {video_path}")
+        logger.info(f"{__name__} : Attached Video {video_path}")
         time.sleep(constants["USER_WAITING_TIME"])
         
         uploading_status_container = None
@@ -128,13 +126,13 @@ class YoutubeUploader:
         title_field.clear()
         
         self.__write_in_field(title_field, video_metadata[constants["VIDEO_TITLE"]])
-        logger.debug(f"Title {video_metadata[constants['VIDEO_TITLE']]}")
+        logger.info(f"{__name__} : Title {video_metadata[constants['VIDEO_TITLE']]}")
         time.sleep(constants["USER_WAITING_TIME"])
         
         video_description = video_metadata[constants["VIDEO_DESCRIPTION"]].replace("\n", Keys.ENTER)
         if video_description:
             self.__write_in_field(description_field, video_description)
-            logger.debug(f"Description set to {video_description}")
+            logger.info(f"{__name__} : Description {video_description}")
             time.sleep(constants["USER_WAITING_TIME"])
         
         kids_section = self.browser.find_element(By.NAME, constants["NOT_MADE_FOR_KIDS_LABEL"])
@@ -143,7 +141,6 @@ class YoutubeUploader:
         self.browser.find_element(By.ID, constants["RADIO_LABEL"]).click()
         
         self.browser.find_element(By.ID, constants["ADVANCED_BUTTON_ID"]).click()
-        logger.debug("Advanced button clicked")
         time.sleep(constants["USER_WAITING_TIME"])
         
         tags = video_metadata[constants["VIDEO_TAGS"]]
@@ -152,7 +149,7 @@ class YoutubeUploader:
             tags_field = self.browser.find_element(By.XPATH, constants["TAGS_INPUT_V2"])
             tags_field.location_once_scrolled_into_view
             self.__write_in_field(tags_field, tags)
-            logger.debug(f"Tags set to {tags}")
+            logger.info(f"{__name__} : Tags {tags}")
             time.sleep(constants["USER_WAITING_TIME"])
         
         self.browser.find_element(By.ID, constants["NEXT_BUTTON"]).click()
@@ -160,7 +157,6 @@ class YoutubeUploader:
         self.browser.find_element(By.ID, constants["NEXT_BUTTON"]).click()
         time.sleep(constants["USER_WAITING_TIME"])
         self.browser.find_element(By.ID, constants["NEXT_BUTTON"]).click()
-        logger.debug("Next button clicked 3 times")
         time.sleep(constants["USER_WAITING_TIME"])
         
         schedule = video_metadata[constants["VIDEO_SCHEDULE"]]
@@ -173,11 +169,10 @@ class YoutubeUploader:
             self.browser.find_element(By.XPATH, constants["SCHEDULE_DATE_TEXTBOX"]).send_keys(
                 datetime.strftime(upload_time_object, "%d/%m/%Y"))
             self.browser.find_element(By.XPATH, constants["SCHEDULE_DATE_TEXTBOX"]).send_keys(Keys.ENTER)
-            logger.debug(f"Schedule set to {schedule}")
+            logger.info(f"{__name__} : Schedule set to {schedule}")
         else: 
             public_main_button = self.browser.find_element(By.NAME, constants["PUBLIC_BUTTON"])
             self.browser.find_element(By.ID, constants["RADIO_LABEL"]).click()
-            logger.debug(f"{video_path} : Public button clicked")
             
             
         time.sleep(constants["USER_WAITING_TIME"])
@@ -186,14 +181,13 @@ class YoutubeUploader:
         
         if done_button.get_attribute("aria-disabled") == "true":
             error_message = self.browser.find_element(By.XPATH, constants["ERROR_CONTAINER"]).text
-            logger.error(f"Error message : {error_message}")
+            logger.info(f"{__name__} : Error message : {error_message}")
             return False
         
         done_button.click()
         time.sleep(2*constants["USER_WAITING_TIME"])
         self.browser.find_element(By.XPATH, constants["CLOSE_BTN"]).click()
-        logger.debug("Published the video {video_path} on Youtube")
-                
+        logger.info(f"{__name__} : Published the video {video_path} on Youtube")
         data_manager.is_published(id_table=video_metadata["id"])
 
         data_manager.is_removable(filepath=video_path)

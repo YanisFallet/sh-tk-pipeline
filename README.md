@@ -13,37 +13,13 @@ Règles à respecter pour l'architecture :
 - INTERDIT D'AVOIR LE MEME NOM DE CHAINES YTB ET TIKTOK
 
 
-=> pour des raisons de droits d'auteurs on va commencer pas mettre du contenu depuis instagram sur tiktok 
-et du contenu de tiktok sur ytb
+
 
 Prochaines choses à dev :
-
-- faire fonctionner le systeme de tiktok uploader ✅
-=> load_metadata ✅
-
-- retravailler la creation des descriptions des videos pour etre en accord avec les droits d'auteurs✅
-=> voir quels dist doivent tagger les comptes ✅
-
-- réorganiser le create content pour pouvoir passer des params de montage ✅ directement dans le fichier arc ✅
-- terminer le create content ✅
-
-- changer tous ce qui est impacté par les fichiers toml ✅
-
-- résoudre le problème des logs qui ne vont pas dans le bon fichierfichier ✅
-
-- résoudre le probleme des cuts videos ✅
-
-- ecrire une fonction clear_input pour le tiktok uploader ✅
-
-- remettre tout à zéro, db, content, etc ✅
 
 - fichier pour pouvoir tous les contrôler
 
 - passer quelques heures à tous débogguer, tout tester
-
-
-- revoir le systeme de logs ✅
-
 
 - revoir le systeme de cut video de tiktok vers youtube
 
@@ -70,7 +46,6 @@ contact.histoireincroyable@gmail.com
 Problème :
 - j'ai codé le is_scrappable mais pas le mettre tout de suite ✅
 - Problème avec le update_one_dist 
-- probleme avec le video processing ✅
 
 
 test : 
@@ -82,15 +57,24 @@ test :
 
 le create_content bug un peu, il faut le debugguer
 => il va falloir traîté les cas où les vidéos téléchargées sont pas bonnes => peut être les supprimer et les mettre en published True   
+=> fonction is_corrupted dans le traitement des videos
 
+ajouter un moyen de pouvoir définir quelles descriptions mettre pour un dist account donné
+=> faire ça dans les parametres des dist accounts
+rajouter à la db is_corrupted pour les videos qui ne fonctionnent pas
+rajouter à la db is_linked  pour le chainage de videos entre elles
 
 =>sinon le tiktok scrapping fonctionne parfaitement
 => remis à zéro
 
 energiedechampion : compte instagram
+=> contacter xcomics pour informations sur animatediff et controlnet
 
 
 => pour l'instant la traj instagram to tiktokest un peu plus complexe car il faudrait concaténer les videos pou rpouvoir etre monétiser sur tiktok et cela pose des problemes sur ce que cela produit sur les bdd car quand on va upload une video il va s'agir en realité de plusieurs videos en meme temps
+
+
+mettre les videos linked en published et en linked avec l'id de la video principale
 
 **DISCLAIMER - The sole purpose of this Youtube channel is to provide viewers with cool content and promote the work of the creator. The channel was created for personal enjoyment and I do not take credit. Please feel free to contact me if you are unhappy with any particular video upload and I will be happy to take it down, rather than reporting the whole group as this will take away people's enjoyment of other videos across the channel. Thank You**
 
@@ -99,4 +83,14 @@ site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseau
 
 => étendre le business à pinterest twitter et facebook pour un maximum d'argent
 
+=> kaiber
+=> replicate peut être
 
+
+=>Sometimes you don't need to be the smartest. You just need to be the guy who never gives up. That is the guy you need to be.
+
+=> qu'immporte la manière on va générer 10k mois avec ce business.
+
+=> Modifier le contenu avec des IA comme animatediff et controlnet
+=> Demander la permission pour scrapper soit en échnages de visibilités soit en échanges d'argent
+- Comment calculer le montantn générer par les videos d'une chaine lorsque l'on upload le contenu de plusieurs chaines sur un dist account

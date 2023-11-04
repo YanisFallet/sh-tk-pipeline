@@ -6,7 +6,7 @@ import random
 
 from tqdm import tqdm
 from moviepy.video.fx.crop import crop
-from moviepy.editor import VideoFileClip, clips_array, concatenate_videoclips, TextClip, CompositeVideoClip
+from moviepy.editor import VideoFileClip, clips_array, concatenate_videoclips
 from moviepy.video.fx.margin import margin
 from skimage.filters import gaussian
 
@@ -14,7 +14,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import data_manager
 from arc_manager import ArcManagement
 from logging_config import logger
-logger.name = __name__
 
 constants = toml.load("core/create_content/constants.toml")
 
@@ -57,6 +56,45 @@ def load_pools_video(cursor):
     selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool'").fetchall()
     return [elem[0] for elem in selection]
 
+@data_manager.sql_connect("data/database.db")
+def check_video(cursor_database, path : str, min_duration : int = 2, dimensions_allowed : list[tuple, tuple] = [(0, 0), (4000, 4000)]):
+    try: 
+        clip = VideoFileClip(path)
+    except OSError:
+        cursor_database.execute("""
+            UPDATE data_content
+            SET is_processed = 1,
+            is_corrupted = 1,
+            is_published = 1
+            WHERE filepath = ?
+        """, (path,))
+        os.remove(path)
+        return False
+    
+    to_wipe_out = False
+    # Check duration
+    if clip.duration < min_duration:
+        logger.warning(f"{__name__} : Video too short for {path}")
+        to_wipe_out = True
+    
+    # Check dimensions
+    if not (clip.size[0] in range(dimensions_allowed[0][0], dimensions_allowed[1][0]) and clip.size[1] in range(dimensions_allowed[0][1], dimensions_allowed[1][1])):
+        logger.warning(f"{__name__} : Video dimensions not allowed for {path}")
+        to_wipe_out = True
+        
+    if to_wipe_out:
+        cursor_database.execute("""
+            UPDATE data_content
+            SET is_processed = 1,
+            is_corrupted = 1,
+            is_published = 1
+            WHERE filepath = ?
+        """, (path,))
+        os.remove(path)
+        return False
+    
+    return True
+        
 def pick_a_color():
     l = [(255, 0, 127), (187, 11, 11), (102, 0, 153),
          (108, 2, 119), (0, 127, 255), (15, 5, 107),
@@ -76,42 +114,101 @@ def speedup_video(video : VideoFileClip, max_time : int = 59, overflow_time : in
         coeff = overflow_time / max_time
         v = video.subclip(0, overflow_time)
         return v.speedx(coeff)
+    
+    
+def build_longer_videos(id_table : int, video : VideoFileClip, min_time: int, gap_time : int = 5):
+    duration = video.duration
+    if duration + gap_time >= min_time:
+        coeff = duration / min_time + 0.001
+        return video.speedx(coeff)
+    else:
+        video = compile_videos(id_table, video, min_time)
+        return video
+    
+@data_manager.sql_connect("data/database.db")
+def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_time : int):
+    video_selection = cursor_database.execute("""
+        SELECT id, filepath FROM data_content
+        WHERE (dist_account, platform) = (
+            SELECT dist_account, platform FROM data_content
+            WHERE id = ?
+        )
+        AND role = 'content'
+        AND is_published = 0
+        AND is_processed = 0
+    """, (id_table,)).fetchall()
 
-def process_content(filepath : str, params : dict = {}) -> bool:
-    video = VideoFileClip(filename=filepath)
-    if video is None:
-        logger.warning(f"Video {filepath} not found or video damaged")
+    videos = [video]
+    id_list = []
+    time_counter = video.duration
+
+    while time_counter < min_time and video_selection:
+        choice = random.choice(video_selection)
+        video_selection.remove(choice)
+
+        v = VideoFileClip(choice[1])
+        videos.append(v)
+        id_list.append(choice[0])
+
+        time_counter += v.duration
+
+    cursor_database.executemany("""
+        UPDATE data_content
+        SET is_processed = 1,
+        is_published = 1,
+        linked_to = ?
+        WHERE id = ?
+    """, ((id_table, id_) for id_ in id_list))
+
+    return concatenate_videoclips(videos)
+
+@data_manager.sql_connect("data/database.db")
+def process_content(cursor, id_table : int, filepath : str, params : dict = {}) -> bool:
+    if not check_video(filepath):
+        logger.info(f"{__name__} : Video {filepath} not found or video damaged")
         return False
-    
+
+    is_processed = cursor.execute("SELECT is_processed FROM data_content WHERE id = ?", (id_table,)).fetchone()[0]
+    if is_processed:
+        logger.info(f"{__name__} : Video {filepath} already processed")
+        return False
+
+    video_clip = VideoFileClip(filename=filepath)
     os.remove(filepath)
-    width, height = video.w, video.h
-    
+
     border = params.get("border", None)
     color = params.get("color", pick_a_color()) if border else None
     margin_size = params.get("margin_size", 9)
-    featuring_video = params.get("featuring_video", False)
-    
-    if params.get("max_duration", None) is not None:
-        video = speedup_video(video, max_time=params["max_duration"])
-    
-    if featuring_video:
-        pool_video = generate_pool_video(video.duration, width, (1-constants["SIZE_FACTOR"] + 0.2)*height, border = border, margin_size=margin_size, color=color)
-        n_video = crop(video, width=width, height=height*constants["SIZE_FACTOR"], x_center=width/2, y_center=height/2)
-    else : 
-        n_video = video
-        
-    n_video = n_video.fl_image(blur_video, params.get("coeff_blur", 0.2))
-    
-    if featuring_video:
-        clips = clips_array([[n_video], [pool_video]])
-        if border:
-            clips = clips.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color)
-    elif border:
-        clips = n_video.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color)
+    is_featuring_video = params.get("featuring_video", False)
+    max_duration = params.get("max_duration", None)
+    min_duration = params.get("min_duration", None)
+
+    if min_duration and max_duration and min_duration > max_duration:
+        logger.error(f"min_duration > max_duration for {filepath}")
+        raise ValueError(f"min_duration > max_duration for {filepath}")
+
+    if max_duration:
+        video_clip = speedup_video(video_clip, max_time=max_duration)
+
+    if min_duration:
+        video_clip = build_longer_videos(id_table, video_clip, min_time=min_duration)
+
+    if is_featuring_video:
+        pool_video = generate_pool_video(video_clip.duration, video_clip.w, (1-constants["SIZE_FACTOR"] + 0.2)*video_clip.h, border=border, margin_size=margin_size, color=color)
+        video_clip = crop(video_clip, width=video_clip.w, height=video_clip.h*constants["SIZE_FACTOR"], x_center=video_clip.w/2, y_center=video_clip.h/2)
+
+    video_clip = video_clip.fl_image(blur_video, params.get("coeff_blur", 0.2))
+
+    if is_featuring_video:
+        final_clip = clips_array([[video_clip], [pool_video]])
     else:
-        clips = n_video
-    clips.write_videofile(filepath, fps=35, codec="libx264")
-    
+        final_clip = video_clip
+
+    if border:
+        final_clip = final_clip.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color)
+
+    final_clip.write_videofile(filepath, fps=35, codec="libx264")
+
     return True
 
 def generate_pool_video(time_to_fill : float, width : float, height : float, border : bool, margin_size = 7, color : tuple[int] = (0,0,0)) -> VideoFileClip:
@@ -137,7 +234,7 @@ def generate_pool_video(time_to_fill : float, width : float, height : float, bor
 def videos_processing_by_account(cursor_database, dist_account : str, params : dict, to_process : bool = True):
     
     selection = cursor_database.execute(f"""
-        SELECT id_filename, filepath, dist_account FROM data_content
+        SELECT id, filepath, dist_account FROM data_content
         WHERE  is_processed = 0
         AND dist_account = '{dist_account}'
         AND role = 'content'
@@ -147,13 +244,14 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
         processed = False
         
         if to_process:
-            processed = process_content(filepath=content[1], params=params) 
+            processed = process_content(id_ = content[0], filepath=content[1], params=params) 
         
         if processed :
-            logger.info(f"Video processing done for {content[1]} of {dist_account}")
-            data_manager.is_processed(id_filename=content[0])
-        
-    logger.info(f"Videos processing done for {dist_account}")
+            logger.info(f"{__name__} : Video processing done for {content[1]} of {dist_account}")
+            data_manager.is_processed(id_table=content[0])
+        else : 
+            logger.info(f"{__name__} : Video processing failed for {content[1]} of {dist_account} or already done")
+    logger.info(f"{__name__} : Videos processing done for {dist_account}")
 
 def videos_processing():
     
@@ -170,8 +268,8 @@ def videos_processing():
 
         for dist_account in n_dist_to_not_process:
             videos_processing_by_account(dist_account=dist_account, params = {}, to_process=False)
-    
-    logger.info(f"Videos processing done for all accounts")
+
+    logger.info(f"{__name__} : Videos processing done for all accounts")
     
 def videos_processing_by_dist_platform(dist_platform : str):
     dist_to_not_process, dist_to_process, dist_params = return_all_dists_to_process_and_params()
@@ -185,14 +283,15 @@ def videos_processing_by_dist_platform(dist_platform : str):
     for dist_account in n_dist_to_not_process:
         videos_processing_by_account(dist_account=dist_account, params = {}, to_process=False)
     
-    logger.info(f"Videos processing done for all accounts of {dist_platform}")
+    logger.info(f"{__name__} : Videos processing done for all accounts of {dist_platform}")
     
 
 if __name__ == "__main__":
+    # print(return_all_dists_to_process_and_params())
+    # filepath = "t/7295812605162147104.mp4"
+    # p = {
+    #         "edit" : True,
+    #         "max_duration" : 59
+    #     }
+    # process_content(filepath, p)
     print(return_all_dists_to_process_and_params())
-    filepath = "t/7295812605162147104.mp4"
-    p = {
-            "edit" : True,
-            "max_duration" : 59
-        }
-    process_content(filepath, p)

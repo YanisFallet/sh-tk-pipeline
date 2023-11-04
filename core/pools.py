@@ -13,7 +13,9 @@ class UpdatePools:
         pass
         
     def __download_pool_instagram(self):
-        pools_accounts, pools_theme = ArcManagement.get_pools_by_platform("instagram")
+        arc = ArcManagement(src_p='instagram', dist_p=None)
+        pools_accounts, pools_theme = arc.get_pools_by_platform()
+        print(pools_accounts, pools_theme)
         for pool_account, pool_theme in zip(pools_accounts, pools_theme):
             to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(pool_account, role = "pool")
             if not is_useless:
@@ -26,7 +28,8 @@ class UpdatePools:
                 downloader.run()
             
     def __download_pool_tiktok(self):
-        pools_accounts, pools_theme = ArcManagement.get_pools_by_platform("tiktok")
+        arc = ArcManagement(src_p='tiktok', dist_p=None)
+        pools_accounts, pools_theme = arc.get_pools_by_platform()
         for pool_account, pool_theme in zip(pools_accounts, pools_theme):
             to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(pool_account, role = "pool")
             if not is_useless:
@@ -45,6 +48,10 @@ class UpdatePools:
         self.__download_pool_instagram()
         time.sleep(2)
         self.__download_pool_tiktok()
+        
+        
+if __name__ == "__main__":
+    print(ArcManagement.get_pools_by_platform("instagram"))
             
         
         

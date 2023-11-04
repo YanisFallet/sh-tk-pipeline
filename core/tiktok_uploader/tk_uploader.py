@@ -8,7 +8,7 @@ from pathlib import Path
 
 from selenium.webdriver.common.by import By
 
-from core.tiktok_uploader.metadata import load_metadata
+from tiktok_uploader.metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import data_manager
@@ -16,12 +16,10 @@ from abstract_scrapper import get_driver
 from arc_manager import ArcManagement
 
 from logging_config import logger
-logger.name = __name__
-
 
 constants = toml.load("core/tiktok_uploader/constants.toml")
 
-class TiktokUplaoder:
+class TiktokUploader:
     
     def __init__(self, 
                 google_account_name : str,
@@ -60,7 +58,6 @@ class TiktokUplaoder:
         time.sleep(2*constants["USER_WAITING_TIME"])
         
         self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
-        logger.info(f"Attached Video {absolute_path}")
         time.sleep(3*constants["USER_WAITING_TIME"])
         
         caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"])
@@ -73,7 +70,7 @@ class TiktokUplaoder:
         time.sleep(constants["USER_WAITING_TIME"])
         
         data_manager.is_published(id_table=metadata_video[constants["ID"]])
-        logger.info(f"Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
+        logger.info(f"{__name__} : Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
         
         data_manager.is_removable(filepath=metadata_video[constants["FILEPATH"]])
 
@@ -97,10 +94,10 @@ class TiktokUplaoder:
             time.sleep(constants["USER_WAITING_TIME"])
             metadata_channel = load_metadata(self.dist_account[0], self.source_platform)    
             self.__bulk_upload(metadata_channel=metadata_channel)
-            logger.info(f"Upload to Tiktok for {self.dist_account[0]} finished")
+            logger.info(f"{__name__} : Upload to Tiktok for {self.dist_account[0]} finished")
             self.__quit()
         else:
-            logger.info(f"Upload to Tiktok for {self.dist_account[0]} not available")
+            logger.info(f"{__name__} : Upload to Tiktok for {self.dist_account[0]} not available")
         
 if __name__ == "__main__":
     ...

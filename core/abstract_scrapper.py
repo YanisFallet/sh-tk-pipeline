@@ -2,6 +2,8 @@ import time
 import os
 
 import undetected_chromedriver as uc
+from selenium.webdriver.chrome.service import Service
+
 
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
@@ -12,6 +14,7 @@ def get_driver(profile = None, headless = False):
         if profile not in ["Default", "Profile 1", "Profile 2"]:
             raise Exception("Profile must be 'Default', 'Profile 1' or 'Profile 2'")
         else:
+            s = Service('/Users/yanisfallet/Downloads/chromedriver')
             options = uc.ChromeOptions()
             options.add_argument(f"--user-data-dir=/Users/yanisfallet/Library/Application Support/Google/Chrome")
             options.add_argument(f"--profile-directory={profile}")

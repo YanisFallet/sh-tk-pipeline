@@ -18,17 +18,6 @@ class ArcManagement:
                 return func(self, arc, *args, **kwargs)
         return wrapper
             
-    def pool_connection(func):
-        def wrapper(self, *args, **kwargs):
-            file_path = os.path.join(f"arc/pools", f"{self.src_p}.json")
-            try:
-                with open(file_path, "r") as f:
-                    arc = json.load(f)
-            except FileNotFoundError:
-                arc = None
-            return func(self, arc, *args, **kwargs)
-        return wrapper
-    
     def dist_connection(func): 
         def wrapper(self, *args, **kwargs):
             file_path = os.path.join(f"arc/dist", f"{self.dist_p}.json")
@@ -98,8 +87,14 @@ class ArcManagement:
                 return arc[pool].get("dist", [])
         return []
     
-    @pool_connection
-    def get_pools_by_platform(self, arc):
+    def get_pools_by_platform(self): 
+        file_path = os.path.join(f"arc/pools", f"{self.src_p}.json")
+        try:
+            with open(file_path, "r") as f:
+                arc = json.load(f)
+        except FileNotFoundError:
+            arc = None
+            return [], []
         pools = []
         type_pools = []
         for type_pool in arc.keys():
@@ -117,9 +112,3 @@ class ArcManagement:
     def get_google_accounts(self):
         with open(os.path.join("arc/utils/google_dir.json"), "r") as f:
             return  json.load(f).keys()
-        
-
-    
-if __name__ == "__main__":
-    a = ArcManagement("tiktok")
-    print(a.get_pools_by_platform())

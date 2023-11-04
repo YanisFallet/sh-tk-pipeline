@@ -10,6 +10,7 @@ from tiktok_download import tk_download
 from insta_download import insta_download
 
 from ytb_uploader.ytb_uploader import YoutubeUploader
+from tiktok_uploader.tk_uploader import TiktokUploader
 from create_content.create_content import videos_processing, videos_processing_by_dist_platform
 
 def create_all_tables():
@@ -100,9 +101,40 @@ def update_traj_instagram_to_tiktok():
     
     
     
-def update_traj_tiktok_to_tiktik():
-    ...
+def update_traj_tiktok_to_tiktok():
+    
+    ARC = arc_manager.ArcManagement(src_p='tiktok', dist_p='tiktok')
+    sources, pools = ARC.get_src(return_pools=True)
+    driver = get_driver(profile = "Profile 2", headless=False)
 
-if __name__ == '__main__':
-    create_all_tables()
-    update_traj_tiktok_to_ytb()
+    for source, pool in zip(sources, pools):
+        to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(source, role = "content")
+        if not is_useless:
+            downloader = tk_download.TikTokScraper(
+                driver = driver,
+                channel_name = source,
+                dist_platform = "tiktok",
+                pool= pool,
+                to_the_bottom= to_the_bottom,
+                optimized= True
+            )
+            downloader.run()
+    
+    driver.quit()
+    
+    utils.update_share_to_account(src_p="tiktok", dist_p="tiktok")
+    
+    time.sleep(5)
+    
+    videos_processing_by_dist_platform(dist_platform="tiktok")
+    
+    google_accounts = ARC.get_google_accounts()
+    
+    for google_account in google_accounts:
+        uploader = TiktokUploader(
+            google_account_name = google_account,
+            source_platform = "tiktok"
+        )
+        
+        uploader.run()
+    

@@ -19,7 +19,6 @@ class InstaScrapper:
         self.channel_name = channel_name
         self.dist_platform = dist_platform
         self.pool = pool
-        logger.info(f"InstaScrapper: {self.channel_name} - {self.dist_platform} - {self.pool}")
         
         if role in ["pool", "content"] : self.role = role
         else : raise ValueError("role must be 'pool' or 'content'")
@@ -46,12 +45,12 @@ class InstaScrapper:
                 if not post.shortcode in already_downloaded:
                     if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
                         self.dw.download_post(post, target=self.channel_name)
-                        logger.info(f"Downloaded '{post.shortcode}'")
+                        logger.info(f"{__name__} : Downloaded '{post.shortcode}'")
                     data_manager.insert_content_data(
                         source_account = self.channel_name,
                         source_platform = 'instagram',
                         dist_platform= self.dist_platform,
-                        dist_account= utils.share_to_account(self.ARC.get_dist_by_pool(self.pool)),
+                        dist_account= utils.share_to_account(self.ARC.get_dist_by_pool(self.pool)) if self.role == "content" else None,
                         pool = self.pool,
                         role = self.role,
                         filename = post.shortcode,
