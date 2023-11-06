@@ -59,7 +59,7 @@ class TiktokUploader:
         
         self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
         time.sleep(3*constants["USER_WAITING_TIME"])
-        
+    
         caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"])
         caption.clear()
         caption.send_keys(metadata_video[constants["CAPTION"]])
@@ -72,7 +72,7 @@ class TiktokUploader:
         data_manager.is_published(id_table=metadata_video[constants["ID"]])
         logger.info(f"{__name__} : Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
         
-        data_manager.is_removable(filepath=metadata_video[constants["FILEPATH"]])
+        data_manager.remove_linked_content(metadata_video[constants["ID"], metadata_video[constants["FILEPATH"]]])
 
         return True
     

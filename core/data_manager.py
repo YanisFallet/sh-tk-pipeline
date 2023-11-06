@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from pathlib import Path
 from random import randint
 from datetime import datetime, timedelta
 from logging_config import logger
@@ -66,8 +67,11 @@ def get_stat_by_dist(cursor : sqlite3.Cursor):
             cursor.execute("""SELECT dist_account, COUNT(*) FROM data_content WHERE is_published = 1 GROUP BY dist""").fetchall())
 
 @sql_connect('data/database.db')
-def select_id_filename_by_src(cursor : sqlite3.Cursor, src_account : str, src_platform : str, for_dist_platform : str):
-    return list(set([d[0] for d in cursor.execute(f"SELECT id_filename FROM data_content WHERE source_account = '{src_account}' AND source_platform = '{src_platform}' AND dist_platform = '{for_dist_platform}'").fetchall()]))
+def select_id_filename_by_src(cursor : sqlite3.Cursor, src_account : str, src_platform : str, for_dist_platform : str, role : str = "content"):
+    if role == 'content':
+        return list(set([d[0] for d in cursor.execute(f"SELECT id_filename FROM data_content WHERE source_account = '{src_account}' AND source_platform = '{src_platform}' AND dist_platform = '{for_dist_platform}' AND role = 'content'").fetchall()]))
+    else :
+        return list(set([d[0] for d in cursor.execute(f"SELECT id_filename FROM data_content WHERE source_account = '{src_account}' AND source_platform = '{src_platform}' AND dist_platform is NULL AND role = 'pool'").fetchall()]))
 
 
 #Database Management of sources
@@ -201,12 +205,11 @@ def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days 
     return datetime.now() > datetime.strptime(selection[0], '%Y-%m-%d %H:%M:%S.%f') + timedelta(days = delta_days)
 
 @sql_connect("data/database.db")
-def is_removable(cursor_database : sqlite3.Cursor, filepath : str):
-    count = cursor_database.execute(f"SELECT COUNT(id) FROM data_content WHERE filepath = ? AND is_published = 0", (filepath,)).fetchone()[0]
-    if count == 0:
-        os.remove(filepath)
-        logger.info(f"File '{filepath}' removed")
-
+def remove_linked_content(cursor_database, id_video : int, filepath : str):
+    selection = cursor_database.execute(f"SELECT filepath FROM data_content WHERE linked_to = '{id_video}'").fetchall()
+    os.remove(filepath)
+    for path in selection:
+        os.remove(os.path.join(Path().cwd(), path[0]))
 
 #Database Management of pools
 

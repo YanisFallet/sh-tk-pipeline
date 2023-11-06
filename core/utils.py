@@ -66,6 +66,3 @@ def update_share_to_account(cursor, src_p : str, dist_p : str):
         dist = ARC.get_dist_by_pool(elem[1])
         dist_account = share_to_account(dist)
         cursor.execute("UPDATE data_content SET dist_account = ? WHERE id = ?", (dist_account, elem[0]))
-
-if __name__ == "__main__":
-    pass

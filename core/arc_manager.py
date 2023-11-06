@@ -78,7 +78,7 @@ class ArcManagement:
             
     @traj_connection
     def get_dist_by_pool(self, arc, pool):
-        if self.dist_p == "youtube":
+        if self.dist_p in ["youtube", "tiktok"]:
             for account in arc.keys():
                 if pool in arc[account].keys():
                     return arc[account][pool].get("dist", [])

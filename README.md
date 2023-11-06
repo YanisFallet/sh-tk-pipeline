@@ -71,8 +71,13 @@ energiedechampion : compte instagram
 => contacter xcomics pour informations sur animatediff et controlnet
 
 
+=> cas ou il n'y a pas assez de videos pour creer une video de 1 min
+=> probleme dans le cas où on va linker les videos et pour les supprimer ensuite
+
+
 => pour l'instant la traj instagram to tiktokest un peu plus complexe car il faudrait concaténer les videos pou rpouvoir etre monétiser sur tiktok et cela pose des problemes sur ce que cela produit sur les bdd car quand on va upload une video il va s'agir en realité de plusieurs videos en meme temps
 
+=> probleme fonction is uploadable
 
 mettre les videos linked en published et en linked avec l'id de la video principale
 
@@ -94,3 +99,13 @@ site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseau
 => Modifier le contenu avec des IA comme animatediff et controlnet
 => Demander la permission pour scrapper soit en échnages de visibilités soit en échanges d'argent
 - Comment calculer le montantn générer par les videos d'une chaine lorsque l'on upload le contenu de plusieurs chaines sur un dist account
+
+
+
+
+=> ameliorer la vitesse d'ecriture des videos
+
+from moviepy.editor import VideoFileClip
+
+input_video = VideoFileClip("input.mp4")
+output_video = input_video.write_videofile("output.mp4", codec="libx264", preset="ultrafast", threads=4, bitrate="1000k")

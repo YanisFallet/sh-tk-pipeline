@@ -34,18 +34,28 @@ class InstaScrapper:
             download_video_thumbnails=False
         )
         
-    def __load_past_videos(self):
-        return data_manager.select_id_filename_by_src(self.channel_name, 'instagram', self.dist_platform)
+    def load_past_videos(self):
+        return data_manager.select_id_filename_by_src(self.channel_name, 'instagram', self.dist_platform, self.role)
     
     def __download_video(self):
-        already_downloaded = self.__load_past_videos()
+        already_downloaded = self.load_past_videos()
         profile = Profile.from_username(self.dw.context, self.channel_name)
         for post in profile.get_posts():
             if post.is_video:
                 if not post.shortcode in already_downloaded:
+                    path = f"content/reels/{post.shortcode}.mp4"
                     if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
+                        target_file = post.shortcode
                         self.dw.download_post(post, target=self.channel_name)
                         logger.info(f"{__name__} : Downloaded '{post.shortcode}'")
+                    else :
+                        i = 1
+                        while os.path.exists(f"content/reels/{post.shortcode}_{i}.mp4"):
+                            i += 1
+                        target_file = f"{post.shortcode}_{i}"
+                        self.dw.download_post(post, target=f"{self.channel_name}_{i}")
+                        logger.info(f"{__name__} : Downloaded '{post.shortcode}_{i}'")
+                        
                     data_manager.insert_content_data(
                         source_account = self.channel_name,
                         source_platform = 'instagram',
@@ -53,8 +63,8 @@ class InstaScrapper:
                         dist_account= utils.share_to_account(self.ARC.get_dist_by_pool(self.pool)) if self.role == "content" else None,
                         pool = self.pool,
                         role = self.role,
-                        filename = post.shortcode,
-                        filepath = f"content/reels/{post.shortcode}.mp4",
+                        filename = target_file,
+                        filepath = f"content/reels/{target_file}.mp4",
                         **utils.extract_description_tags(post.caption)
                     )
                 else:
@@ -73,7 +83,7 @@ class InstaScrapper:
         
 if __name__ == "__main__":
     insta = InstaScrapper('imangadzhi', 'youtube', "iman_gadzhi", role = "content")
-    # insta.run()
+    
     
     
     

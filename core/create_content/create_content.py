@@ -3,6 +3,7 @@ import json
 import toml
 import sys
 import random
+from functools import partial
 
 from tqdm import tqdm
 from moviepy.video.fx.crop import crop
@@ -58,8 +59,20 @@ def load_pools_video(cursor):
 
 @data_manager.sql_connect("data/database.db")
 def check_video(cursor_database, path : str, min_duration : int = 2, dimensions_allowed : list[tuple, tuple] = [(0, 0), (4000, 4000)]):
+    abs_path = os.path.join(os.getcwd(), path)
+    
+    if not os.path.exists(abs_path):
+        cursor_database.execute("""
+            UPDATE data_content
+            SET is_processed = 1,
+            is_corrupted = 1,
+            is_published = 1
+            WHERE filepath = ?
+        """, (path,))
+        return False
     try: 
         clip = VideoFileClip(path)
+        
     except OSError:
         cursor_database.execute("""
             UPDATE data_content
@@ -68,7 +81,7 @@ def check_video(cursor_database, path : str, min_duration : int = 2, dimensions_
             is_published = 1
             WHERE filepath = ?
         """, (path,))
-        os.remove(path)
+        os.remove(abs_path)
         return False
     
     to_wipe_out = False
@@ -90,7 +103,7 @@ def check_video(cursor_database, path : str, min_duration : int = 2, dimensions_
             is_published = 1
             WHERE filepath = ?
         """, (path,))
-        os.remove(path)
+        os.remove(abs_path)
         return False
     
     return True
@@ -164,6 +177,7 @@ def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_t
 
 @data_manager.sql_connect("data/database.db")
 def process_content(cursor, id_table : int, filepath : str, params : dict = {}) -> bool:
+    
     if not check_video(filepath):
         logger.info(f"{__name__} : Video {filepath} not found or video damaged")
         return False
@@ -197,7 +211,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
         pool_video = generate_pool_video(video_clip.duration, video_clip.w, (1-constants["SIZE_FACTOR"] + 0.2)*video_clip.h, border=border, margin_size=margin_size, color=color)
         video_clip = crop(video_clip, width=video_clip.w, height=video_clip.h*constants["SIZE_FACTOR"], x_center=video_clip.w/2, y_center=video_clip.h/2)
 
-    video_clip = video_clip.fl_image(blur_video, params.get("coeff_blur", 0.2))
+    video_clip = video_clip.fl_image(partial(blur_video, sigma=params.get("coeff_blur", 0.2)))
 
     if is_featuring_video:
         final_clip = clips_array([[video_clip], [pool_video]])
@@ -244,7 +258,7 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
         processed = False
         
         if to_process:
-            processed = process_content(id_ = content[0], filepath=content[1], params=params) 
+            processed = process_content(id_table = content[0], filepath=content[1], params=params) 
         
         if processed :
             logger.info(f"{__name__} : Video processing done for {content[1]} of {dist_account}")
@@ -287,11 +301,4 @@ def videos_processing_by_dist_platform(dist_platform : str):
     
 
 if __name__ == "__main__":
-    # print(return_all_dists_to_process_and_params())
-    # filepath = "t/7295812605162147104.mp4"
-    # p = {
-    #         "edit" : True,
-    #         "max_duration" : 59
-    #     }
-    # process_content(filepath, p)
-    print(return_all_dists_to_process_and_params())
+    pass

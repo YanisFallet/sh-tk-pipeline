@@ -190,7 +190,7 @@ class YoutubeUploader:
         logger.info(f"{__name__} : Published the video {video_path} on Youtube")
         data_manager.is_published(id_table=video_metadata["id"])
 
-        data_manager.is_removable(filepath=video_path)
+        data_manager.remove_linked_content(video_metadata["id"], absolute_path_video)
         
         return True
     
