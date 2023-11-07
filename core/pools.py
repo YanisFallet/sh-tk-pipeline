@@ -14,7 +14,6 @@ class UpdatePools:
     def __download_pool_instagram(self):
         arc = ArcManagement(src_p='instagram', dist_p=None)
         pools_accounts, pools_theme = arc.get_pools_by_platform()
-        print(pools_accounts, pools_theme)
         for pool_account, pool_theme in zip(pools_accounts, pools_theme):
             to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(pool_account, role = "pool")
             if not is_useless:

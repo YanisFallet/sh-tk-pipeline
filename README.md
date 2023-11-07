@@ -105,7 +105,7 @@ site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseau
 
 => ameliorer la vitesse d'ecriture des videos
 
-from moviepy.editor import VideoFileClip
 
-input_video = VideoFileClip("input.mp4")
-output_video = input_video.write_videofile("output.mp4", codec="libx264", preset="ultrafast", threads=4, bitrate="1000k")
+=> revoir les mentions et les tags sur tiktok feature absolument essentielle
+=> revoir l'enchainement des uploads sur tiktok
+=> voir si la parallélisation fonctionne

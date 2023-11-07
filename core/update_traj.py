@@ -126,8 +126,10 @@ def update_traj_tiktok_to_tiktok():
     
     time.sleep(5)
     
+    
     videos_processing_by_dist_platform(dist_platform="tiktok")
     
+    print("ok")
     google_accounts = ARC.get_google_accounts()
     
     for google_account in google_accounts:

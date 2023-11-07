@@ -3,7 +3,9 @@ import json
 import toml
 import sys
 import random
+import concurrent.futures
 from functools import partial
+
 
 from tqdm import tqdm
 from moviepy.video.fx.crop import crop
@@ -221,7 +223,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
     if border:
         final_clip = final_clip.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color)
 
-    final_clip.write_videofile(filepath, fps=35, codec="libx264")
+    final_clip.write_videofile(filepath, fps=25, codec = "libx264", threads = 10, preset = "ultrafast", logger=None)
 
     return True
 
@@ -252,7 +254,10 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
         WHERE  is_processed = 0
         AND dist_account = '{dist_account}'
         AND role = 'content'
+        LIMIT {constants["NBR_PROCESSING_DAY_ACCOUNT"]}
     """).fetchall()
+    
+    print(selection)
     
     for content in tqdm(selection, desc=f"Processing videos for {dist_account}", unit="video"):
         processed = False
@@ -266,9 +271,38 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
         else : 
             logger.info(f"{__name__} : Video processing failed for {content[1]} of {dist_account} or already done")
     logger.info(f"{__name__} : Videos processing done for {dist_account}")
+    
+@data_manager.sql_connect("data/database.db")
+def videos_processing_by_account_concurrent(cursor_database, dist_account: str, params: dict, to_process: bool = True):
+    selection = cursor_database.execute(f"""
+        SELECT id, filepath, dist_account FROM data_content
+        WHERE  is_processed = 0
+        AND dist_account = '{dist_account}'
+        AND role = 'content'
+        LIMIT {constants["NBR_PROCESSING_DAY_ACCOUNT"]}
+    """).fetchall()
+    
+    
+
+    def process_video(content):
+        id_table, filepath, _ = content
+        processed = False
+
+        if to_process:
+            processed = process_content(id_table=id_table, filepath=filepath, params=params)
+
+        if processed:
+            logger.info(f"{__name__} : Video processing done for {filepath} of {dist_account}")
+            data_manager.is_processed(id_table=id_table)
+        else:
+            logger.info(f"{__name__} : Video processing failed for {filepath} of {dist_account} or already done")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        list(executor.map(process_video, selection))
+
+    logger.info(f"{__name__} : Videos processing done for {dist_account}")
 
 def videos_processing():
-    
     dist_to_not_process, dist_to_process, dist_params = return_all_dists_to_process_and_params()
     
     platforms = ["tiktok", "youtube", "instagram"]
@@ -278,7 +312,7 @@ def videos_processing():
         n_dist_to_process = dist_to_process.get(platform, [])
         
         for dist_account in n_dist_to_process:
-            videos_processing_by_account(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
+            videos_processing_by_account_concurrent(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
 
         for dist_account in n_dist_to_not_process:
             videos_processing_by_account(dist_account=dist_account, params = {}, to_process=False)
@@ -301,4 +335,11 @@ def videos_processing_by_dist_platform(dist_platform : str):
     
 
 if __name__ == "__main__":
-    pass
+    par = {
+            "edit": True, 
+            "border": True, 
+            "blurring": True,
+            "coeff_blur" : 0.4,
+            "margin_size" : 7
+        }
+    print(process_content(100000, "t/F2.mp4", par))

@@ -72,7 +72,7 @@ class TiktokUploader:
         data_manager.is_published(id_table=metadata_video[constants["ID"]])
         logger.info(f"{__name__} : Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
         
-        data_manager.remove_linked_content(metadata_video[constants["ID"], metadata_video[constants["FILEPATH"]]])
+        data_manager.remove_linked_content(metadata_video[constants["ID"]], metadata_video[constants["FILEPATH"]])
 
         return True
     
