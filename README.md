@@ -21,9 +21,7 @@ Prochaines choses à dev :
 
 - passer quelques heures à tous débogguer, tout tester
 
-- revoir le systeme de cut video de tiktok vers youtube
 
-- fonction is_removable 
 
 
 => cut ou accelerer la video peut être une option pour les videos tiktok vers youtube
@@ -60,12 +58,6 @@ le create_content bug un peu, il faut le debugguer
 => fonction is_corrupted dans le traitement des videos
 
 ajouter un moyen de pouvoir définir quelles descriptions mettre pour un dist account donné
-=> faire ça dans les parametres des dist accounts
-rajouter à la db is_corrupted pour les videos qui ne fonctionnent pas
-rajouter à la db is_linked  pour le chainage de videos entre elles
-
-=>sinon le tiktok scrapping fonctionne parfaitement
-=> remis à zéro
 
 energiedechampion : compte instagram
 => contacter xcomics pour informations sur animatediff et controlnet
@@ -102,10 +94,5 @@ site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseau
 
 
 
-
-=> ameliorer la vitesse d'ecriture des videos
-
-
 => revoir les mentions et les tags sur tiktok feature absolument essentielle
 => revoir l'enchainement des uploads sur tiktok
-=> voir si la parallélisation fonctionne

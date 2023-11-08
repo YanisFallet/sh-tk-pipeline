@@ -17,5 +17,8 @@ SPLIT_COUNTER_CSS_SELECTOR = "jsx-6342101 split-num-inputr"
     
 CAPTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div'
 
+MENTION_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[1]'
+HASTAG_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[2]'
+
 POST_BUTTON = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[2]/div[8]/div[2]"
 

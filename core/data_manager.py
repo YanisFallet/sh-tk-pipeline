@@ -145,9 +145,9 @@ def update_one_dist(cursor : sqlite3.Cursor, dist_account : str, platform : str)
 def is_uploadable(cursor : sqlite3.Cursor, dist_account : str, platform : str, count : bool = True, MAX_UPLOAD_DAILY : int = 15, edge : int = 10):
     data_dist =  cursor.execute(f"SELECT * FROM dist_update WHERE dist = '{dist_account}' AND platform = '{platform}'").fetchone()
     if data_dist is None:
-        daily_upload = 1 if count else 0
-        cursor.execute(f"INSERT INTO dist_update (dist, platform, updated_time, daily_upload, limit_date_for_daily) VALUES('{dist_account}', '{platform}', '{datetime.now()}', '{daily_upload}', '{datetime.now() + timedelta(days = 1, minutes = edge)}')")
-        logger.info(f"{__name__} :  Dist '{dist_account}' on '{platform}' has {MAX_UPLOAD_DAILY - 1} upload(s) left")
+        c = 1 if count else 0
+        cursor.execute(f"INSERT INTO dist_update (dist, platform, updated_time, daily_upload, limit_date_for_daily) VALUES('{dist_account}', '{platform}', '{datetime.now()}', '{c}', '{datetime.now() + timedelta(days = 1, minutes = edge)}')")
+        logger.info(f"{__name__} :  Dist '{dist_account}' on '{platform}' has {MAX_UPLOAD_DAILY - c} upload(s) left")
         return True
     else:
         date_limit = datetime.strptime(data_dist[-1], '%Y-%m-%d %H:%M:%S.%f')

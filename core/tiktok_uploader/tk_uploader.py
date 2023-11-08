@@ -47,6 +47,14 @@ class TiktokUploader:
     def __get_to_tiktok_upload(self):
         self.browser.get(constants["TIKTOK_CREATOR_CENTER"])
         time.sleep(constants["USER_WAITING_TIME"])
+        
+    def __inject_caption(self, text : str):
+        """Inject caption in the caption input
+        => caption 
+        => hashtags
+        => mentions
+        """
+        pass
          
     def __upload(self, metadata_video : dict) -> bool:
         absolute_path = os.path.join(Path().cwd(), metadata_video[constants["FILEPATH"]])
@@ -58,10 +66,11 @@ class TiktokUploader:
         time.sleep(2*constants["USER_WAITING_TIME"])
         
         self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
-        time.sleep(3*constants["USER_WAITING_TIME"])
+        time.sleep(4*constants["USER_WAITING_TIME"])
     
         caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"])
         caption.clear()
+        time.sleep(constants["USER_WAITING_TIME"])
         caption.send_keys(metadata_video[constants["CAPTION"]])
         
         time.sleep(constants["USER_WAITING_TIME"])

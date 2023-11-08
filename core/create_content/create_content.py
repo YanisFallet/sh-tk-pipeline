@@ -7,6 +7,11 @@ import concurrent.futures
 from functools import partial
 
 
+# // <button type="button" aria-label="@mention" class="jsx-4056857548 jsx-3119853737 jsx-3734900869 jsx-403562581 icon-style at"><svg fill="currentColor" font-size="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M24.28 44.54c-4.32 0-8.1-.87-11.33-2.6a18.05 18.05 0 0 1-7.49-7.2A21.94 21.94 0 0 1 2.87 23.9c0-4.04.87-7.57 2.6-10.61a18.21 18.21 0 0 1 7.43-7.15c3.2-1.7 6.88-2.55 11.04-2.55 4.04 0 7.59.77 10.66 2.3 3.1 1.51 5.5 3.67 7.2 6.49a18.19 18.19 0 0 1 2.6 9.79c0 3.52-.82 6.4-2.46 8.64-1.63 2.2-3.93 3.31-6.9 3.31-1.86 0-3.34-.4-4.42-1.2a4.6 4.6 0 0 1-1.73-3.7l.67.3a6.42 6.42 0 0 1-2.64 3.4 8.28 8.28 0 0 1-4.56 1.2 8.52 8.52 0 0 1-7.97-4.75 11.24 11.24 0 0 1-1.15-5.19c0-1.95.37-3.66 1.1-5.13a8.52 8.52 0 0 1 7.92-4.75c1.8 0 3.3.41 4.52 1.24 1.24.8 2.1 1.94 2.54 3.41l-.67.82v-4.04a1 1 0 0 1 1-1h2.27a1 1 0 0 1 1 1v12.05c0 .87.22 1.5.67 1.92.48.39 1.12.58 1.92.58 1.38 0 2.45-.75 3.22-2.26.8-1.53 1.2-3.44 1.2-5.7 0-3.05-.67-5.69-2.02-7.93a12.98 12.98 0 0 0-5.52-5.13 17.94 17.94 0 0 0-8.3-1.83c-3.3 0-6.23.69-8.79 2.07a14.82 14.82 0 0 0-5.9 5.76 17.02 17.02 0 0 0-2.11 8.59c0 3.39.7 6.35 2.11 8.88 1.4 2.5 3.4 4.41 6 5.76a19.66 19.66 0 0 0 9.17 2.01h10.09a1 1 0 0 1 1 1v2.04a1 1 0 0 1-1 1H24.28Zm-1-14.12c1.72 0 3.08-.56 4.07-1.68 1.03-1.12 1.54-2.64 1.54-4.56 0-1.92-.51-3.44-1.54-4.56a5.17 5.17 0 0 0-4.08-1.68c-1.7 0-3.05.56-4.08 1.68-.99 1.12-1.49 2.64-1.49 4.56 0 1.92.5 3.44 1.5 4.56a5.26 5.26 0 0 0 4.07 1.68Z"></path></svg></button>
+
+# // <button type="button" aria-label="Hashtag" class="jsx-4056857548 jsx-3119853737 jsx-3734900869 jsx-403562581 icon-style hash"><svg fill="currentColor" font-size="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path fill-rule="evenodd" clip-rule="evenodd" d="m17.74 15.5.68-6.6a1 1 0 0 1 1-.9h.97a1 1 0 0 1 1 1.1l-.63 6.4h7.98l.68-6.6a1 1 0 0 1 1-.9h.97a1 1 0 0 1 1 1.1l-.63 6.4H37a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-5.54l-.8 8H36a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-5.64l-.78 7.6a1 1 0 0 1-1 .9h-.97a1 1 0 0 1-1-1.1l.73-7.4h-7.98l-.78 7.6a1 1 0 0 1-1 .9h-.97a1 1 0 0 1-1-1.1l.73-7.4H11a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1h5.64l.8-8H12a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1h5.74Zm2.72 3-.8 8h7.98l.8-8h-7.98Z"></path></svg></button>
+
+
 from tqdm import tqdm
 from moviepy.video.fx.crop import crop
 from moviepy.editor import VideoFileClip, clips_array, concatenate_videoclips
@@ -55,8 +60,14 @@ def return_all_dists_to_process_and_params() -> tuple[dict, dict, dict]:
     return dist_to_not_process, dist_to_process, dist_params
 
 @data_manager.sql_connect("data/database.db")
-def load_pools_video(cursor):
-    selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool'").fetchall()
+def load_pools_video(cursor, pool_name : str = None):
+    if pool_name is None:
+        selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool'").fetchall()
+    else:
+        selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool' AND pool = ?", (pool_name,)).fetchall()
+        if len(selection) == 0:
+            logger.warning(f"{__name__} : No pool video found for {pool_name}")
+            selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool'").fetchall()
     return [elem[0] for elem in selection]
 
 @data_manager.sql_connect("data/database.db")
@@ -210,7 +221,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
         video_clip = build_longer_videos(id_table, video_clip, min_time=min_duration)
 
     if is_featuring_video:
-        pool_video = generate_pool_video(video_clip.duration, video_clip.w, (1-constants["SIZE_FACTOR"] + 0.2)*video_clip.h, border=border, margin_size=margin_size, color=color)
+        pool_video = generate_pool_video(video_clip.duration, video_clip.w, (1-constants["SIZE_FACTOR"] + 0.2)*video_clip.h, pool_name=params.get("f_video_pool_name", None), border=border, margin_size=margin_size, color=color)
         video_clip = crop(video_clip, width=video_clip.w, height=video_clip.h*constants["SIZE_FACTOR"], x_center=video_clip.w/2, y_center=video_clip.h/2)
 
     video_clip = video_clip.fl_image(partial(blur_video, sigma=params.get("coeff_blur", 0.2)))
@@ -227,9 +238,9 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
 
     return True
 
-def generate_pool_video(time_to_fill : float, width : float, height : float, border : bool, margin_size = 7, color : tuple[int] = (0,0,0)) -> VideoFileClip:
+def generate_pool_video(time_to_fill : float, width : float, height : float, pool_name : str = None, border : bool = False, margin_size = 7, color : tuple[int] = (0,0,0)) -> VideoFileClip:
     filled = False
-    pools_videos = load_pools_video()
+    pools_videos = load_pools_video(pool_name=pool_name)
     videos = []
     time_counter = 0
     while not filled:
@@ -297,7 +308,7 @@ def videos_processing_by_account_concurrent(cursor_database, dist_account: str, 
         else:
             logger.info(f"{__name__} : Video processing failed for {filepath} of {dist_account} or already done")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(constants["NBR_PROCESSING_DAY_ACCOUNT"]//2, 10)) as executor:
         list(executor.map(process_video, selection))
 
     logger.info(f"{__name__} : Videos processing done for {dist_account}")
@@ -326,7 +337,7 @@ def videos_processing_by_dist_platform(dist_platform : str):
     n_dist_to_process = dist_to_process.get(dist_platform, [])
     
     for dist_account in n_dist_to_process:
-        videos_processing_by_account(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
+        videos_processing_by_account_concurrent(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
 
     for dist_account in n_dist_to_not_process:
         videos_processing_by_account(dist_account=dist_account, params = {}, to_process=False)
@@ -335,11 +346,4 @@ def videos_processing_by_dist_platform(dist_platform : str):
     
 
 if __name__ == "__main__":
-    par = {
-            "edit": True, 
-            "border": True, 
-            "blurring": True,
-            "coeff_blur" : 0.4,
-            "margin_size" : 7
-        }
-    print(process_content(100000, "t/F2.mp4", par))
+    videos_processing_by_dist_platform("tiktok")

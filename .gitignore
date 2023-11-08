@@ -6,3 +6,4 @@ data/
 downloaded_files/
 logs/
 test/
+*.pyc
