@@ -15,7 +15,6 @@ from ytb_uploader.metadata import load_metadata
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import utils
 import arc_manager
 import data_manager
 from abstract_scrapper import get_driver

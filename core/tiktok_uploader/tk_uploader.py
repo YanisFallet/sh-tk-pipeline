@@ -7,10 +7,12 @@ from pathlib import Path
 
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 from tiktok_uploader.metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import utils
 import data_manager
 from abstract_scrapper import get_driver
 from arc_manager import ArcManagement
@@ -49,12 +51,25 @@ class TiktokUploader:
         time.sleep(constants["USER_WAITING_TIME"])
         
     def __inject_caption(self, text : str):
-        """Inject caption in the caption input
-        => caption 
-        => hashtags
-        => mentions
-        """
-        pass
+        "Inject caption in the caption input"
+        split_text : list[str] = utils.split_text_m_h_t(text)
+        caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"])
+        time.sleep(constants["USER_WAITING_TIME"])
+        caption.clear()
+        for elem_t in split_text:
+            if elem_t.startswith("#"):
+                self.browser.find_element(By.XPATH, constants["HASHTAG_BUTTON"]).click()
+                caption.send_keys(elem_t.strip("#"))
+                time.sleep(constants["USER_WAITING_TIME"])
+                caption.send_keys(Keys.ENTER)
+            elif elem_t.startswith("@"):
+                self.browser.find_element(By.XPATH, constants["MENTION_BUTTON"]).click()
+                caption.send_keys(elem_t.strip("@"))
+                time.sleep(constants["USER_WAITING_TIME"])
+                caption.send_keys(Keys.ENTER)
+            else:
+                caption.send_keys(elem_t)
+                time.sleep(constants["USER_WAITING_TIME"])
          
     def __upload(self, metadata_video : dict) -> bool:
         absolute_path = os.path.join(Path().cwd(), metadata_video[constants["FILEPATH"]])
@@ -68,10 +83,7 @@ class TiktokUploader:
         self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
         time.sleep(4*constants["USER_WAITING_TIME"])
     
-        caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"])
-        caption.clear()
-        time.sleep(constants["USER_WAITING_TIME"])
-        caption.send_keys(metadata_video[constants["CAPTION"]])
+        self.__inject_caption(metadata_video[constants["CAPTION"]])
         
         time.sleep(constants["USER_WAITING_TIME"])
         
@@ -110,7 +122,6 @@ class TiktokUploader:
         
 if __name__ == "__main__":
     ...
-
         
         
         

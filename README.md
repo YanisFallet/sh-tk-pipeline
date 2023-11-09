@@ -69,10 +69,6 @@ energiedechampion : compte instagram
 
 => pour l'instant la traj instagram to tiktokest un peu plus complexe car il faudrait concaténer les videos pou rpouvoir etre monétiser sur tiktok et cela pose des problemes sur ce que cela produit sur les bdd car quand on va upload une video il va s'agir en realité de plusieurs videos en meme temps
 
-=> probleme fonction is uploadable
-
-mettre les videos linked en published et en linked avec l'id de la video principale
-
 **DISCLAIMER - The sole purpose of this Youtube channel is to provide viewers with cool content and promote the work of the creator. The channel was created for personal enjoyment and I do not take credit. Please feel free to contact me if you are unhappy with any particular video upload and I will be happy to take it down, rather than reporting the whole group as this will take away people's enjoyment of other videos across the channel. Thank You**
 
 site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseaux-sociaux/
@@ -93,6 +89,4 @@ site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseau
 - Comment calculer le montantn générer par les videos d'une chaine lorsque l'on upload le contenu de plusieurs chaines sur un dist account
 
 
-
-=> revoir les mentions et les tags sur tiktok feature absolument essentielle
 => revoir l'enchainement des uploads sur tiktok

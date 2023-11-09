@@ -66,3 +66,25 @@ def update_share_to_account(cursor, src_p : str, dist_p : str):
         dist = ARC.get_dist_by_pool(elem[1])
         dist_account = share_to_account(dist)
         cursor.execute("UPDATE data_content SET dist_account = ? WHERE id = ?", (dist_account, elem[0]))
+
+
+def split_text_m_h_t(text):
+    i = 0
+    result = []
+    substr = ""
+    while i < len(text):
+        if text[i] == "#" or text[i] == "@":
+            if substr:
+                result.append(substr)
+            substr = ""
+            while i < len(text) and text[i] != " ":
+                substr += text[i]
+                i += 1
+            result.append(substr)
+            substr = ""
+        else:
+            substr += text[i]
+        i += 1
+    if substr:
+        result.append(substr)
+    return result
