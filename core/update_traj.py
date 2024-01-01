@@ -10,7 +10,7 @@ from tiktok_download import tk_download
 from insta_download import insta_download
 
 from ytb_uploader.ytb_uploader import YoutubeUploader
-from tiktok_uploader.tk_uploader import TiktokUploader
+from tiktok_uploader.tiktok_uploader import TiktokUploader
 from create_content.create_content import videos_processing, videos_processing_by_dist_platform
 
 def create_all_tables():

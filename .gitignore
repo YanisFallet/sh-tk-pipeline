@@ -6,4 +6,5 @@ data/
 downloaded_files/
 logs/
 test/
-*.pyc
+**.pyc
+**/__pycache__/

@@ -268,8 +268,6 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
         LIMIT {constants["NBR_PROCESSING_DAY_ACCOUNT"]}
     """).fetchall()
     
-    print(selection)
-    
     for content in tqdm(selection, desc=f"Processing videos for {dist_account}", unit="video"):
         processed = False
         
@@ -293,8 +291,6 @@ def videos_processing_by_account_concurrent(cursor_database, dist_account: str, 
         LIMIT {constants["NBR_PROCESSING_DAY_ACCOUNT"]}
     """).fetchall()
     
-    
-
     def process_video(content):
         id_table, filepath, _ = content
         processed = False
@@ -308,7 +304,7 @@ def videos_processing_by_account_concurrent(cursor_database, dist_account: str, 
         else:
             logger.info(f"{__name__} : Video processing failed for {filepath} of {dist_account} or already done")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max(constants["NBR_PROCESSING_DAY_ACCOUNT"]//2, 10)) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers= 10) as executor:
         list(executor.map(process_video, selection))
 
     logger.info(f"{__name__} : Videos processing done for {dist_account}")

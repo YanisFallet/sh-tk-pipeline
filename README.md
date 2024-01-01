@@ -90,3 +90,10 @@ site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseau
 
 
 => revoir l'enchainement des uploads sur tiktok
+   => j'ai besoin de recoder une grande partie du tiktok uploader car l'enchainement est compliqué
+   => il faut faire un code specifique pour la premiere video
+   => attendre le message de confirmation puis aller sur new videos ou manage post
+   => si new_video reupload et ainsi de suite
+
+
+on a trouvé la solution il suffit de cliquer sur new upload puis soit rediriger vers une nouvelle page titkok soit quit$
