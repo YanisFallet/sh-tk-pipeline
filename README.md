@@ -14,17 +14,6 @@ Règles à respecter pour l'architecture :
 
 
 
-
-Prochaines choses à dev :
-
-- fichier pour pouvoir tous les contrôler
-
-- passer quelques heures à tous débogguer, tout tester
-
-
-
-
-=> cut ou accelerer la video peut être une option pour les videos tiktok vers youtube
 => concaténer les videos instagram vers tiktok
 
 
@@ -73,16 +62,11 @@ energiedechampion : compte instagram
 
 site formats videos: https://www.blogdumoderateur.com/guide-format-videos-reseaux-sociaux/
 
-
-=> étendre le business à pinterest twitter et facebook pour un maximum d'argent
-
 => kaiber
 => replicate peut être
 
 
-=>Sometimes you don't need to be the smartest. You just need to be the guy who never gives up. That is the guy you need to be.
 
-=> qu'immporte la manière on va générer 10k mois avec ce business.
 
 => Modifier le contenu avec des IA comme animatediff et controlnet
 => Demander la permission pour scrapper soit en échnages de visibilités soit en échanges d'argent

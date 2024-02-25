@@ -11,8 +11,9 @@ from random_user_agent.params import SoftwareName, OperatingSystem
 
 def get_driver(profile = None, headless = False):
     if profile is not None: 
-        if profile not in ["Default", "Profile 1", "Profile 2"]:
-            raise Exception("Profile must be 'Default', 'Profile 1' or 'Profile 2'")
+        print(f"Using profile {profile}")
+        if profile not in ["Default", "Profile 4", "Profile 3"]:
+            raise Exception("Profile must be 'Default', 'Profile 3' or 'Profile 4'")
         else:
             s = Service('/Users/yanisfallet/Downloads/chromedriver')
             options = uc.ChromeOptions()

@@ -8,23 +8,16 @@ ID = "id"
 #FIRST UPLOAD
 TIKTOK_CREATOR_CENTER = "https://www.tiktok.com/creator-center/upload?from=upload"
 
-F_CAPTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div'
+CAPTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div/span/span'
+
+POST_BUTTON = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[7]/div[2]/button'
+
 
 F_MENTION_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[1]'
 F_MENTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[2]/div/div/div[1]/input'
 
 F_HASHTAG_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[2]'
 
-F_POST_BUTTON = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[2]/div[8]/div[2]"
 
-MODAL_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[9]/div/div[2]/div[1]'
 
-#OTHERS UPLOAD
-O_CAPTION_INPUT = '//*[@id="root"]/div/div/div/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div'
-
-O_MENTION_BTN = '//*[@id="root"]/div/div/div/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[1]'
-O_MENTION_INPUT = '//*[@id="root"]/div/div/div/div/div[2]/div[2]/div[1]/div/div[2]/div/div/div[1]/input'
-
-O_HASHTAG_BTN = '//*[@id="root"]/div/div/div/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[2]'
-
-O_POST_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[8]/div[2]'
+MODAL_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[8]/div/div[2]/div[1]'

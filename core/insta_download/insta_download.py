@@ -43,7 +43,6 @@ class InstaScrapper:
         for post in profile.get_posts():
             if post.is_video:
                 if not post.shortcode in already_downloaded:
-                    path = f"content/reels/{post.shortcode}.mp4"
                     if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
                         target_file = post.shortcode
                         self.dw.download_post(post, target=self.channel_name)

@@ -7,8 +7,9 @@ from pathlib import Path
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import NoSuchElementException
 
-from tiktok_uploader.metadata import load_metadata
+from metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import utils
@@ -28,6 +29,8 @@ class TiktokUploader:
         self.google_account_name = google_account_name
         self.source_platform = source_platform
         self.dist_account = self.ARC.get_dist_by_google_account(self.google_account_name)
+        
+        print(self.dist_account)
 
         if len(self.dist_account) != 1:
             raise Exception(f"Google account '{google_account_name}' is not linked to one and only one Tiktok account: {len(self.dist_account)} found")
@@ -45,12 +48,26 @@ class TiktokUploader:
 
     def __inject_caption(self, text: str, caption_input_xpath):
         split_text = utils.split_text_m_h_t(text)
-        caption = self.browser.find_element(By.XPATH, caption_input_xpath)
-        time.sleep(constants["USER_WAITING_TIME"])
-        caption.clear()
         
- 
+        i = 0
+        found = False
+        while i < 100 and not found:
+            try:
+                caption = self.browser.find_element(By.XPATH, caption_input_xpath)
+                found = True
+            except NoSuchElementException:
+                time.sleep(constants["USER_WAITING_TIME"])
+                i += 1
+                
+        time.sleep(constants["USER_WAITING_TIME"])
+        # caption.clear()
+        time.sleep(constants["USER_WAITING_TIME"])
+        
+        ActionChains(self.browser).move_to_element(caption).click(caption).key_down(Keys.COMMAND).send_keys('a').key_up(Keys.COMMAND).send_keys(Keys.BACK_SPACE).perform()
+        time.sleep(constants["USER_WAITING_TIME"])
+        
         for elem_t in split_text:
+            print(elem_t)
             if elem_t.startswith("#") or elem_t.startswith("@"):
                 ActionChains(self.browser).send_keys(elem_t).perform()
                 time.sleep(constants["USER_WAITING_TIME"])
@@ -59,9 +76,10 @@ class TiktokUploader:
             else:
                 ActionChains(self.browser).send_keys(elem_t).perform()
                 time.sleep(constants["USER_WAITING_TIME"])
-
-
-    def __upload(self, metadata_video: dict, caption_input_xpath, post_button_xpath):
+                
+    def __upload(self, metadata_video: dict):
+        
+        print(metadata_video)
         
         self.__get_to_tiktok_upload()
         
@@ -74,30 +92,28 @@ class TiktokUploader:
         time.sleep(2 * constants["USER_WAITING_TIME"])
 
         self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
-        time.sleep(4 * constants["USER_WAITING_TIME"])
 
-        self.__inject_caption(metadata_video[constants["CAPTION"]], caption_input_xpath)
+        self.__inject_caption(metadata_video[constants["CAPTION"]], constants["CAPTION_INPUT"])
 
+        time.sleep(2*constants["USER_WAITING_TIME"])
+
+        self.browser.find_element(By.XPATH, constants["POST_BUTTON"]).click()
         time.sleep(constants["USER_WAITING_TIME"])
-
-        self.browser.find_element(By.XPATH, post_button_xpath).click()
-        time.sleep(constants["USER_WAITING_TIME"])
-        # data_manager.is_published(id_table=metadata_video[constants["ID"]])
+        data_manager.is_published(id_table=metadata_video[constants["ID"]])
         logger.info(f"{__name__}: Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
-        # data_manager.remove_linked_content(metadata_video[constants["ID"]], metadata_video[constants["FILEPATH"]])
+        data_manager.remove_linked_content(metadata_video[constants["ID"]], metadata_video[constants["FILEPATH"]])
 
         self.__wait_tiktok_modal()
         
         time.sleep(constants["USER_WAITING_TIME"])
         
         return True
-    
-    
 
     def __wait_tiktok_modal(self):
         found = False
         while not found:
             try:
+                print("waiting modal")
                 self.browser.find_element(By.XPATH, constants["MODAL_BTN"])
                 found = True
             except:
@@ -110,50 +126,30 @@ class TiktokUploader:
     def __quit(self):
         self.browser.close()
 
-    def test(self):
-        self.__get_driver_t()
-        self.__get_to_tiktok_upload()
-        self.__first_upload(metadata_video={
-            "id": 5400,
-            "filepath": "t/7289467392646860064.mp4",
-            "id_filename": "7289467392646860064",
-            "caption": "hello @brain.tv1 #radin zeubi, #courses",
-            "dist_account": "@geniusmomentsoflife"
-        })
-        self.__others_upload(metadata_video={
-            "id": 5400,
-            "filepath": "t/7289467392646860064.mp4",
-            "id_filename": "7289467392646860064",
-            "caption": "hello @brain.tv1 #radin zeubi, #courses",
-            "dist_account": "@geniusmomentsoflife"
-        })
-        self.__quit()
-        
     def __bulk_upload(self, metadata_channel : list[dict]):
         for metadata_video in metadata_channel:
             if  data_manager.is_uploadable(self.dist_account[0], "tiktok", MAX_UPLOAD_DAILY=10):                   
                 self.__get_to_tiktok_upload()
                 self.__upload(metadata_video)
-                time.sleep(3*constants["USER_WAITING_TIME"])
+                time.sleep(constants["USER_WAITING_TIME"])
     
     def run(self):
-        if data_manager.is_uploadable(self.dist_account[0], "tiktok", count = False, MAX_UPLOAD_DAILY=10):
-            self.__get_driver_t()
-            time.sleep(constants["USER_WAITING_TIME"])
-            metadata_channel = load_metadata(self.dist_account[0], self.source_platform)    
-            self.__bulk_upload(metadata_channel=metadata_channel)
-            logger.info(f"{__name__} : Upload to Tiktok for {self.dist_account[0]} finished")
-            self.__quit()
-        else:
-            logger.info(f"{__name__} : Upload to Tiktok for {self.dist_account[0]} not available")
+        for dist_account in self.dist_account:
+            if data_manager.is_uploadable(dist_account, "tiktok", count = False, MAX_UPLOAD_DAILY=10):
+                self.__get_driver_t()
+                time.sleep(constants["USER_WAITING_TIME"])
+                metadata_channel = load_metadata(dist_account, self.source_platform)
+                print(dist_account,metadata_channel) 
+                self.__bulk_upload(metadata_channel=metadata_channel)
+                logger.info(f"{__name__} : Upload to Tiktok for {dist_account} finished")
+                self.__quit()
+            else:
+                logger.info(f"{__name__} : Upload to Tiktok for {dist_account} not available")
         
 if __name__ == "__main__":
-    t = TiktokUploader(google_account_name="shortsfactory33", source_platform="tiktok")
-    t.test()
-
-"""
-        for tag in tags:
-            ActionChains(bot).send_keys(tag).perform()
-            time.sleep(2)
-            ActionChains(bot).send_keys(Keys.RETURN).perform()
-            time.sleep(1)"""
+    uploader = TiktokUploader(
+        google_account_name = "shortsfactory33",
+        source_platform = "tiktok"
+    )
+    uploader.run()
+    

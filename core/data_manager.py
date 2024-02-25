@@ -194,10 +194,12 @@ def schedule_video(cursor_database : sqlite3.Cursor, dist_account : str, platfor
 @sql_connect("data/database.db")
 def is_published(cursor_database : sqlite3.Cursor, id_table : int) : 
     cursor_database.execute(f"UPDATE data_content SET is_published = 1 WHERE id = '{id_table}'")
+    logger.info(f"{__name__} : Video {id_table} published from the list of videos to publish")
 
 @sql_connect("data/database.db")
 def is_processed(cursor_database : sqlite3.Cursor, id_table : int) : 
     cursor_database.execute(f"UPDATE data_content SET is_processed = 1 WHERE id = '{id_table}'")
+    logger.info(f"{__name__} : Video {id_table} processed")
 
 @sql_connect("data/update_src.db")
 def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days : int = 3):
@@ -206,10 +208,13 @@ def is_scrappable(cursor_upadte : sqlite3.Cursor, src_account : str, delta_days 
 
 @sql_connect("data/database.db")
 def remove_linked_content(cursor_database, id_video : int, filepath : str):
+    c = [filepath]
     selection = cursor_database.execute(f"SELECT filepath FROM data_content WHERE linked_to = '{id_video}'").fetchall()
     os.remove(filepath)
     for path in selection:
         os.remove(os.path.join(Path().cwd(), path[0]))
+        c.append(path[0])
+    logger.info(f"{__name__} : File(s) {",".join(c)} removed from the system")
 
 #Database Management of pools
 

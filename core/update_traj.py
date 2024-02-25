@@ -31,7 +31,7 @@ def update_traj_tiktok_to_ytb():
     #retrieve tiktok content
     ARC = arc_manager.ArcManagement(src_p='tiktok', dist_p='youtube')
     sources, pools = ARC.get_src(return_pools=True)
-    driver = get_driver(profile = "Profile 2", headless=False)
+    driver = get_driver(profile = "Profile 3", headless=False)
 
     for source, pool in zip(sources, pools):
         to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(source, role = "content")
@@ -105,7 +105,7 @@ def update_traj_tiktok_to_tiktok():
     
     ARC = arc_manager.ArcManagement(src_p='tiktok', dist_p='tiktok')
     sources, pools = ARC.get_src(return_pools=True)
-    driver = get_driver(profile = "Profile 2", headless=False)
+    driver = get_driver(profile = "Profile 3", headless=False)
 
     for source, pool in zip(sources, pools):
         to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(source, role = "content")
@@ -129,7 +129,6 @@ def update_traj_tiktok_to_tiktok():
     
     videos_processing_by_dist_platform(dist_platform="tiktok")
     
-    print("ok")
     google_accounts = ARC.get_google_accounts()
     
     for google_account in google_accounts:
@@ -137,6 +136,5 @@ def update_traj_tiktok_to_tiktok():
             google_account_name = google_account,
             source_platform = "tiktok"
         )
-        
         uploader.run()
     

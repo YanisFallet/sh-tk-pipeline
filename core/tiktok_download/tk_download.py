@@ -134,13 +134,17 @@ class TikTokScraper(AbstractScrapper):
 
     def __optimized_download_video(self, new_id, all_video_content):
         logger.info(f"{__name__} : Found {len(new_id)} new videos for {self.channel_name}")
+        new_id = list(set(new_id))
         with ThreadPoolExecutor(max_workers=10) as executor:
             executor.map(partial(self.__download_video, all_video_content), new_id)
             
     def __non_optimized_download_video(self, new_id, all_video_content):
         logger.info(f"{__name__} : Found {len(new_id)} new videos for {self.channel_name}")
+        new_id = list(set(new_id))
         for id_ in new_id:
             self.__download_video(all_video_content, id_)
+            
+    
 
     def run(self):
         new_id, all_video_content= self.__get_links()
