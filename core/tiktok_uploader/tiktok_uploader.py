@@ -3,13 +3,14 @@ import sys
 import time
 import json
 import toml
+import random
 from pathlib import Path
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 
-from metadata import load_metadata
+from tiktok_uploader.metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import utils
@@ -44,7 +45,21 @@ class TiktokUploader:
 
     def __get_to_tiktok_upload(self):
         self.browser.get(constants["TIKTOK_CREATOR_CENTER"])
-        time.sleep(constants["USER_WAITING_TIME"])
+        self.wait_randomly()
+    
+    def __move_mouse_randomly(self):
+        actions = ActionChains(self.browser)
+        width = self.browser.execute_script("return document.body.clientWidth;")
+        height = self.browser.execute_script("return document.body.clientHeight;")
+        x = random.uniform(0, width)
+        y = random.uniform(0, height)
+        actions.move_to_element_with_offset(self.browser.find_element_by_tag_name("body"), x, y).perform()
+        self.wait_randomly()
+        
+    def wait_randomly(factor : int = 1, min_time: float = constants["USER_WAITING_TIME_MIN"], max_time: float = constants["USER_WAITING_TIME_MAX"]):
+        wait_time = factor * random.uniform(min_time, max_time)
+        time.sleep(wait_time)
+
 
     def __inject_caption(self, text: str, caption_input_xpath):
         split_text = utils.split_text_m_h_t(text)
@@ -56,56 +71,49 @@ class TiktokUploader:
                 caption = self.browser.find_element(By.XPATH, caption_input_xpath)
                 found = True
             except NoSuchElementException:
-                time.sleep(constants["USER_WAITING_TIME"])
+                self.wait_randomly()
                 i += 1
-                
-        time.sleep(constants["USER_WAITING_TIME"])
-        # caption.clear()
-        time.sleep(constants["USER_WAITING_TIME"])
         
         ActionChains(self.browser).move_to_element(caption).click(caption).key_down(Keys.COMMAND).send_keys('a').key_up(Keys.COMMAND).send_keys(Keys.BACK_SPACE).perform()
-        time.sleep(constants["USER_WAITING_TIME"])
+        self.wait_randomly()
         
         for elem_t in split_text:
-            print(elem_t)
             if elem_t.startswith("#") or elem_t.startswith("@"):
                 ActionChains(self.browser).send_keys(elem_t).perform()
-                time.sleep(constants["USER_WAITING_TIME"])
+                self.wait_randomly()
                 ActionChains(self.browser).send_keys(Keys.RETURN).perform()
-                time.sleep(constants["USER_WAITING_TIME"])
+                self.wait_randomly()
             else:
                 ActionChains(self.browser).send_keys(elem_t).perform()
-                time.sleep(constants["USER_WAITING_TIME"])
+                self.wait_randomly()
                 
     def __upload(self, metadata_video: dict):
-        
-        print(metadata_video)
-        
         self.__get_to_tiktok_upload()
         
         absolute_path = os.path.join(Path().cwd(), metadata_video[constants["FILEPATH"]])
 
-        time.sleep(2 * constants["USER_WAITING_TIME"])
+        self.wait_randomly(factor= 2)
 
         iframe = self.browser.find_element(By.CSS_SELECTOR, "iframe")
         self.browser.switch_to.frame(iframe)
-        time.sleep(2 * constants["USER_WAITING_TIME"])
+        self.wait_randomly(factor= 2)
 
         self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
 
         self.__inject_caption(metadata_video[constants["CAPTION"]], constants["CAPTION_INPUT"])
 
-        time.sleep(2*constants["USER_WAITING_TIME"])
+        self.wait_randomly(factor= 2)
 
         self.browser.find_element(By.XPATH, constants["POST_BUTTON"]).click()
-        time.sleep(constants["USER_WAITING_TIME"])
+        self.wait_randomly()
+        
         data_manager.is_published(id_table=metadata_video[constants["ID"]])
         logger.info(f"{__name__}: Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
         data_manager.remove_linked_content(metadata_video[constants["ID"]], metadata_video[constants["FILEPATH"]])
 
         self.__wait_tiktok_modal()
         
-        time.sleep(constants["USER_WAITING_TIME"])
+        self.wait_randomly()
         
         return True
 
@@ -113,15 +121,15 @@ class TiktokUploader:
         found = False
         while not found:
             try:
-                print("waiting modal")
+                logger.info(f"{__name__}: Waiting for modal for {self.dist_account[0]} on Tiktok")
                 self.browser.find_element(By.XPATH, constants["MODAL_BTN"])
                 found = True
             except:
-                time.sleep(constants["USER_WAITING_TIME"])
+                self.wait_randomly()
 
         self.browser.find_element(By.XPATH, constants["MODAL_BTN"]).click()
         logger.info(f"{__name__}: Modal clicked")
-        time.sleep(constants["USER_WAITING_TIME"])
+        self.wait_randomly()
 
     def __quit(self):
         self.browser.close()
@@ -131,15 +139,15 @@ class TiktokUploader:
             if  data_manager.is_uploadable(self.dist_account[0], "tiktok", MAX_UPLOAD_DAILY=10):                   
                 self.__get_to_tiktok_upload()
                 self.__upload(metadata_video)
-                time.sleep(constants["USER_WAITING_TIME"])
+                self.wait_randomly()
     
     def run(self):
         for dist_account in self.dist_account:
             if data_manager.is_uploadable(dist_account, "tiktok", count = False, MAX_UPLOAD_DAILY=10):
                 self.__get_driver_t()
-                time.sleep(constants["USER_WAITING_TIME"])
+                self.wait_randomly()
                 metadata_channel = load_metadata(dist_account, self.source_platform)
-                print(dist_account,metadata_channel) 
+                
                 self.__bulk_upload(metadata_channel=metadata_channel)
                 logger.info(f"{__name__} : Upload to Tiktok for {dist_account} finished")
                 self.__quit()

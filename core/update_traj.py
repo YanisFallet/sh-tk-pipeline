@@ -97,8 +97,34 @@ def update_traj_instagram_to_ytb():
     
     
 def update_traj_instagram_to_tiktok():
-    ...
+    ARC = arc_manager.ArcManagement(src_p='instagram', dist_p='tiktok')
+    sources, pools = ARC.get_src(return_pools=True)
     
+    for source, pool  in zip(sources, pools):
+        to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(source, role = "content")
+        if not is_useless:
+            downloader = insta_download.InstaScrapper(
+                channel_name = source,
+                dist_platform = "tiktok",
+                role = "content",
+                pool = pool
+            )
+            downloader.run()
+    
+    utils.update_share_to_account(src_p="instagram", dist_p="tiktok")
+    
+    videos_processing_by_dist_platform(dist_platform="tiktok")
+    
+    time.sleep(5)
+    
+    google_accounts = ARC.get_google_accounts()
+    
+    for google_account in google_accounts:
+        uploader = TiktokUploader(
+            google_account_name = google_account,
+            source_platform = "instagram"
+        )
+        uploader.run()
     
     
 def update_traj_tiktok_to_tiktok():

@@ -1,5 +1,6 @@
-import time
 import os
+import time
+import random
 
 import undetected_chromedriver as uc
 from selenium.webdriver.chrome.service import Service
@@ -49,7 +50,7 @@ class AbstractScrapper:
                 ("return (window.pageYOffset !== undefined) ?"
                 " window.pageYOffset : (document.documentElement ||"
                 " document.body.parentNode || document.body);"))
-            time.sleep(1.5)
+            time.sleep(random.uniform(0.5, 1.5))
             driver.execute_script((
                 "var scrollingElement = (document.scrollingElement ||"
                 " document.body);scrollingElement.scrollTop ="

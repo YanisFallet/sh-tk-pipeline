@@ -37,7 +37,7 @@ def load_metadata(cursor, dist_account : str, platform : str):
 
 def get_title_prefix(dist_account: str, platform: str, source_account :str, source_platform :str) -> str:
     language = utils.get_language(dist_account, platform)
-    return f"Check out @{source_account} on @{source_platform}" if language == "en" else f"Allez voir @{source_account} sur @{source_platform}"
+    return f"Check out {source_account} on @{source_platform}" if language == "en" else f"Allez voir @{source_account} sur @{source_platform}"
 
 def title(description: str, dist_account: str, platform: str, source_account :str, source_platform :str) -> str:
     if utils.must_tagged(dist_account, platform, source_account, source_platform):

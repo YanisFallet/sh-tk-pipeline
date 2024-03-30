@@ -214,7 +214,7 @@ def remove_linked_content(cursor_database, id_video : int, filepath : str):
     for path in selection:
         os.remove(os.path.join(Path().cwd(), path[0]))
         c.append(path[0])
-    logger.info(f"{__name__} : File(s) {",".join(c)} removed from the system")
+    logger.info(f"{__name__} : File(s) {','.join(c)} removed from the system")
 
 #Database Management of pools
 

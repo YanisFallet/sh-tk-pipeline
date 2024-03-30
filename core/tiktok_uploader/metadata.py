@@ -36,7 +36,7 @@ def load_metadata(cursor, dist_account : str, platform : str):
 
 def build_description(description : str, dist_account : str, platform : str, source_account : str, source_platform : str)-> str:
     if utils.must_tagged(dist_account, platform):
-        return f"Allez voir @{source_account} sur {source_platform} ! {description[0:2000]}"
+        return f"Allez voir {source_account} sur {source_platform} ! {description[0:2000]}"
     else : 
         return f"{description[0:2000]}"
     
