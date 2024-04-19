@@ -102,12 +102,14 @@ def update_traj_instagram_to_tiktok():
     
     for source, pool  in zip(sources, pools):
         to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(source, role = "content")
+        print(f"useless : {is_useless}")
         if not is_useless:
             downloader = insta_download.InstaScrapper(
                 channel_name = source,
                 dist_platform = "tiktok",
                 role = "content",
-                pool = pool
+                pool = pool,
+                optimized = True
             )
             downloader.run()
     

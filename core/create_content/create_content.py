@@ -56,12 +56,13 @@ def return_all_dists_to_process_and_params() -> tuple[dict, dict, dict]:
 @data_manager.sql_connect("data/database.db")
 def load_pools_video(cursor, pool_name : str = None):
     if pool_name is None:
-        selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool'").fetchall()
+        selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool' AND is_corrupted = 0").fetchall()
     else:
-        selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool' AND pool = ?", (pool_name,)).fetchall()
+        selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool' AND pool = ? AND is_corrupted = 0 ", (pool_name,)).fetchall()
         if len(selection) == 0:
             logger.warning(f"{__name__} : No pool video found for {pool_name}")
-            selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool'").fetchall()
+            selection = cursor.execute("SELECT filepath FROM data_content WHERE role = 'pool' AND is_corrupted = 0").fetchall()
+            
     return [elem[0] for elem in selection]
 
 @data_manager.sql_connect("data/database.db")
@@ -89,6 +90,7 @@ def check_video(cursor_database, path : str, min_duration : int = 2, dimensions_
             WHERE filepath = ?
         """, (path,))
         os.remove(abs_path)
+        print(f"{abs_path} os error")
         return False
     
     to_wipe_out = False
@@ -111,6 +113,7 @@ def check_video(cursor_database, path : str, min_duration : int = 2, dimensions_
             WHERE filepath = ?
         """, (path,))
         os.remove(abs_path)
+        print(f"{abs_path} to wipe out")
         return False
     
     return True
@@ -149,20 +152,22 @@ def build_longer_videos(id_table : int, video : VideoFileClip, min_time: int, ga
 def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_time : int):
     video_selection = cursor_database.execute("""
         SELECT id, filepath FROM data_content
-        WHERE (dist_account, platform) = (
-            SELECT dist_account, platform FROM data_content
+        WHERE (dist_account, dist_platform) = (
+            SELECT dist_account, dist_platform FROM data_content
             WHERE id = ?
         )
         AND role = 'content'
         AND is_published = 0
         AND is_processed = 0
-    """, (id_table,)).fetchall()
+        AND is_corrupted = 0
+        AND id != ?
+    """,(id_table, id_table)).fetchall()
 
-    videos = [video]
+    videos = [video]  
     id_list = []
     time_counter = video.duration
 
-    while time_counter < min_time and video_selection:
+    while time_counter < min_time and len(video_selection) > 0:
         choice = random.choice(video_selection)
         video_selection.remove(choice)
 
@@ -171,7 +176,7 @@ def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_t
         id_list.append(choice[0])
 
         time_counter += v.duration
-
+        
     cursor_database.executemany("""
         UPDATE data_content
         SET is_processed = 1,
@@ -179,7 +184,7 @@ def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_t
         linked_to = ?
         WHERE id = ?
     """, ((id_table, id_) for id_ in id_list))
-
+    print(videos, len(videos))
     return concatenate_videoclips(videos)
 
 @data_manager.sql_connect("data/database.db")
@@ -187,6 +192,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
     
     if not check_video(filepath):
         logger.info(f"{__name__} : Video {filepath} not found or video damaged")
+        cursor.execute("UPDATE data_content SET is_corrupted = 1 WHERE id = ?", (id_table,))
         return False
 
     is_processed = cursor.execute("SELECT is_processed FROM data_content WHERE id = ?", (id_table,)).fetchone()[0]
@@ -196,6 +202,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
 
     video_clip = VideoFileClip(filename=filepath)
     os.remove(filepath)
+    print(f"Processing {filepath}")
 
     border = params.get("border", None)
     color = params.get("color", pick_a_color()) if border else None
@@ -213,7 +220,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
 
     if min_duration:
         video_clip = build_longer_videos(id_table, video_clip, min_time=min_duration)
-
+    
     if is_featuring_video:
         pool_video = generate_pool_video(video_clip.duration, video_clip.w, (1-constants["SIZE_FACTOR"] + 0.2)*video_clip.h, pool_name=params.get("f_video_pool_name", None), border=border, margin_size=margin_size, color=color)
         video_clip = crop(video_clip, width=video_clip.w, height=video_clip.h*constants["SIZE_FACTOR"], x_center=video_clip.w/2, y_center=video_clip.h/2)
@@ -228,8 +235,10 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
     if border:
         final_clip = final_clip.fx(margin, left=margin_size, right=margin_size, top=margin_size, bottom=margin_size, color=color)
 
-    # final_clip.write_videofile(filepath, fps=25, codec = "libx264", threads = 10, preset = "ultrafast", logger=None)
-    final_clip.write_videofile(filepath, fps=25, codec = "libx264", threads = 3, logger=None)
+    if final_clip.fps is None:
+        final_clip.fps = 25  # or any other default value
+
+    final_clip.write_videofile(filepath, fps=final_clip.fps, codec = "libx264", threads = 3, logger=None)
 
     return True
 
@@ -254,10 +263,10 @@ def generate_pool_video(time_to_fill : float, width : float, height : float, poo
 
 @data_manager.sql_connect("data/database.db")
 def videos_processing_by_account(cursor_database, dist_account : str, params : dict, to_process : bool = True):
-    
     selection = cursor_database.execute(f"""
         SELECT id, filepath, dist_account FROM data_content
         WHERE  is_processed = 0
+        AND is_corrupted = 0
         AND dist_account = '{dist_account}'
         AND role = 'content'
         LIMIT {constants["NBR_PROCESSING_DAY_ACCOUNT"]}
@@ -265,8 +274,10 @@ def videos_processing_by_account(cursor_database, dist_account : str, params : d
     
     for content in tqdm(selection, desc=f"Processing videos for {dist_account}", unit="video"):
         processed = False
+        # check if video is still to process
+        p = cursor_database.execute("SELECT is_processed FROM data_content WHERE id = ?", (content[0],)).fetchone()[0]
         
-        if to_process:
+        if to_process and not p:
             processed = process_content(id_table = content[0], filepath=content[1], params=params) 
         
         if processed :
@@ -281,6 +292,7 @@ def videos_processing_by_account_concurrent(cursor_database, dist_account: str, 
     selection = cursor_database.execute(f"""
         SELECT id, filepath, dist_account FROM data_content
         WHERE  is_processed = 0
+        AND is_corrupted = 0
         AND dist_account = '{dist_account}'
         AND role = 'content'
         LIMIT {constants["NBR_PROCESSING_DAY_ACCOUNT"]}
@@ -322,19 +334,41 @@ def videos_processing():
     logger.info(f"{__name__} : Videos processing done for all accounts")
     
 def videos_processing_by_dist_platform(dist_platform : str):
+    
+    check_all_videos()
+    
     dist_to_not_process, dist_to_process, dist_params = return_all_dists_to_process_and_params()
     
     n_dist_to_not_process = dist_to_not_process.get(dist_platform, [])
     n_dist_to_process = dist_to_process.get(dist_platform, [])
     
+    # for dist_account in n_dist_to_process:
+    #     videos_processing_by_account_concurrent(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
+
     for dist_account in n_dist_to_process:
-        videos_processing_by_account_concurrent(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
+        videos_processing_by_account(dist_account=dist_account, params = dist_params[dist_account], to_process = True)
 
     for dist_account in n_dist_to_not_process:
         videos_processing_by_account(dist_account=dist_account, params = {}, to_process=False)
     
     logger.info(f"{__name__} : Videos processing done for all accounts of {dist_platform}")
+
+@data_manager.sql_connect("data/database.db")
+def check_all_videos(cursor_database):
+    all = cursor_database.execute("SELECT id, filepath FROM data_content WHERE is_published = 0").fetchall()
+    for video in all:
+        if not check_video(video[1]):
+            cursor_database.execute("""
+                UPDATE data_content
+                SET is_processed = 1,
+                is_corrupted = 1,
+                is_published = 1
+                WHERE id = ?
+            """, (video[0],))
+            logger.info(f"{__name__} : Video {video[1]} corrupted")
+            print(f"{video[1]} corrupted")
+    logger.info(f"{__name__} : All videos checked")
     
 
 if __name__ == "__main__":
-    videos_processing_by_dist_platform("tiktok")
+    check_all_videos()

@@ -165,6 +165,7 @@ def is_uploadable(cursor : sqlite3.Cursor, dist_account : str, platform : str, c
             daily_upload = 1 if count else 0
             if count:
                 cursor.execute(f"UPDATE dist_update SET daily_upload = {daily_upload}, limit_date_for_daily = '{datetime.now() + timedelta(days = 1, minutes = edge)}' WHERE dist = '{dist_account}' AND platform = '{platform}'")
+            logger.info(f"{__name__} : Dist '{dist_account}' on '{platform}' has {MAX_UPLOAD_DAILY - daily_upload} upload(s) left")
             return True
         
         

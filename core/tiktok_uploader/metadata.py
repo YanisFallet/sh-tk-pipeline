@@ -10,13 +10,13 @@ import utils
 
 
 @data_manager.sql_connect("data/database.db")
-def load_metadata(cursor, dist_account : str, platform : str): 
+def load_metadata(cursor, dist_account : str, dist_platform : str): 
     data = cursor.execute(f"""
         SELECT id, filepath, id_filename, description, dist_account, dist_platform, source_account, source_platform  FROM data_content
         WHERE  is_published = 0
         AND is_processed = 1
         AND dist_account = '{dist_account}'
-        AND dist_platform = '{platform}'
+        AND dist_platform = '{dist_platform}'
         AND role = 'content'
     """).fetchall()
     
@@ -44,4 +44,4 @@ def build_description(description : str, dist_account : str, platform : str, sou
 
 
 if __name__ == "__main__": 
-    print(load_metadata("ViesHorsDuCommun", "youtube"))
+    print(load_metadata("@traveltheworldoutside", "tiktok"))

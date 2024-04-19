@@ -9,7 +9,10 @@ from arc_manager import ArcManagement
 
 
 def extract_description_tags(caption_text : str):
-    return {"description" : remove_non_bmp_characters(caption_text), 
+    if caption_text is None:
+        return {"description" : "", "tags" : ""}
+    else :
+        return {"description" : remove_non_bmp_characters(caption_text), 
             "tags" : ",".join([remove_non_bmp_characters(tag.strip("#")) for tag in caption_text.split() if tag.startswith('#')])}
 
 def get_id_by_channel(channel_name :str) -> str:

@@ -9,9 +9,9 @@ ID = "id"
 #FIRST UPLOAD
 TIKTOK_CREATOR_CENTER = "https://www.tiktok.com/creator-center/upload?from=upload"
 
-CAPTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div/span/span'
+CAPTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/div[1]/div/div/div/div/div/div/span/span'
 
-POST_BUTTON = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[7]/div[2]/button'
+POST_BUTTON = '//*[@id="root"]/div/div/div/div[2]/div/div[2]/div[7]/div[2]/button'
 
 
 F_MENTION_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[1]'
@@ -20,5 +20,4 @@ F_MENTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/d
 F_HASHTAG_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[2]'
 
 
-
-MODAL_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[8]/div/div[2]/div[1]'
+MODAL_BTN = '//*[@id="root"]/div/div/div/div[2]/div/div[2]/div[8]/div'

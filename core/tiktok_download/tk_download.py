@@ -32,7 +32,7 @@ class TikTokScraper(AbstractScrapper):
         
         self.ARC = ArcManagement(src_p='tiktok', dist_p=dist_platform)
         
-        
+        os.makedirs("content/tiktok", exist_ok=True)
         
         super().__init__(channel_name = channel_name,
                          content_name = 'tiktok',

@@ -10,13 +10,14 @@ def main():
 
 
     # run the pool scrapper
-    pool_sccrapper = pools.UpdatePools()
-    pool_sccrapper.run()
+    # pool_sccrapper = pools.UpdatePools()
+    # pool_sccrapper.run()
 
     # update the trajectories
     update_traj.update_traj_instagram_to_tiktok()
     
     logger.info(f"{__name__} : Finished")
+    print("Finished")
     
 if __name__ == "__main__":
     main()

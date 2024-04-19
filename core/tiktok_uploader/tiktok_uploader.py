@@ -11,6 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 
 from tiktok_uploader.metadata import load_metadata
+# from metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import utils
@@ -30,8 +31,6 @@ class TiktokUploader:
         self.google_account_name = google_account_name
         self.source_platform = source_platform
         self.dist_account = self.ARC.get_dist_by_google_account(self.google_account_name)
-        
-        print(self.dist_account)
 
         if len(self.dist_account) != 1:
             raise Exception(f"Google account '{google_account_name}' is not linked to one and only one Tiktok account: {len(self.dist_account)} found")
@@ -56,7 +55,7 @@ class TiktokUploader:
         actions.move_to_element_with_offset(self.browser.find_element_by_tag_name("body"), x, y).perform()
         self.wait_randomly()
         
-    def wait_randomly(factor : int = 1, min_time: float = constants["USER_WAITING_TIME_MIN"], max_time: float = constants["USER_WAITING_TIME_MAX"]):
+    def wait_randomly(self,factor : int = 1, min_time: float = constants["USER_WAITING_TIME_MIN"], max_time: float = constants["USER_WAITING_TIME_MAX"]):
         wait_time = factor * random.uniform(min_time, max_time)
         time.sleep(wait_time)
 
@@ -144,10 +143,12 @@ class TiktokUploader:
     def run(self):
         for dist_account in self.dist_account:
             if data_manager.is_uploadable(dist_account, "tiktok", count = False, MAX_UPLOAD_DAILY=10):
+                print("inside")
                 self.__get_driver_t()
                 self.wait_randomly()
-                metadata_channel = load_metadata(dist_account, self.source_platform)
-                
+                print("wait")
+                metadata_channel = load_metadata(dist_account, "tiktok")
+                print(metadata_channel)
                 self.__bulk_upload(metadata_channel=metadata_channel)
                 logger.info(f"{__name__} : Upload to Tiktok for {dist_account} finished")
                 self.__quit()
@@ -157,7 +158,10 @@ class TiktokUploader:
 if __name__ == "__main__":
     uploader = TiktokUploader(
         google_account_name = "shortsfactory33",
-        source_platform = "tiktok"
+        source_platform = "instagram"
     )
-    uploader.run()
+    print(uploader.dist_account)
+    
+    # uploader.run()
+    
     

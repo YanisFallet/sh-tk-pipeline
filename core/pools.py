@@ -21,7 +21,8 @@ class UpdatePools:
                     channel_name = pool_account,
                     dist_platform = None,
                     role="pool",
-                    pool = pool_theme
+                    pool = pool_theme,
+                    optimized = True
                 )
                 downloader.run()
             
