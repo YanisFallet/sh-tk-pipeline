@@ -185,7 +185,7 @@ def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_t
         WHERE id = ?
     """, ((id_table, id_) for id_ in id_list))
     print(videos, len(videos))
-    return concatenate_videoclips(videos)
+    return concatenate_videoclips(videos, method="compose")
 
 @data_manager.sql_connect("data/database.db")
 def process_content(cursor, id_table : int, filepath : str, params : dict = {}) -> bool:
@@ -256,9 +256,9 @@ def generate_pool_video(time_to_fill : float, width : float, height : float, poo
         if time_counter >= time_to_fill:
             filled = True
     if border:
-        return concatenate_videoclips(videos).set_audio(None).subclip(0, time_to_fill).fx(margin, top = margin_size, color=color) 
+        return concatenate_videoclips(videos, method='compose').set_audio(None).subclip(0, time_to_fill).fx(margin, top = margin_size, color=color) 
     else:
-        return concatenate_videoclips(videos).set_audio(None).subclip(0, time_to_fill)
+        return concatenate_videoclips(videos, method='compose').set_audio(None).subclip(0, time_to_fill)
 
 
 @data_manager.sql_connect("data/database.db")

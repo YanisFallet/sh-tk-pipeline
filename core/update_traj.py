@@ -100,9 +100,11 @@ def update_traj_instagram_to_tiktok():
     ARC = arc_manager.ArcManagement(src_p='instagram', dist_p='tiktok')
     sources, pools = ARC.get_src(return_pools=True)
     
+    print(sources)
+    
     for source, pool  in zip(sources, pools):
         to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(source, role = "content")
-        print(f"useless : {is_useless}")
+        print(f"useless {source} : {is_useless}")
         if not is_useless:
             downloader = insta_download.InstaScrapper(
                 channel_name = source,
@@ -166,3 +168,9 @@ def update_traj_tiktok_to_tiktok():
         )
         uploader.run()
     
+    
+if __name__ == "__main__":
+    ARC = arc_manager.ArcManagement(src_p='instagram', dist_p='tiktok')
+    sources, pools = ARC.get_src(return_pools=True)
+    for source, pool in zip(sources, pools):
+        print(source, pool)

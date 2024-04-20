@@ -79,12 +79,12 @@ class TiktokUploader:
         for elem_t in split_text:
             if elem_t.startswith("#") or elem_t.startswith("@"):
                 ActionChains(self.browser).send_keys(elem_t).perform()
-                self.wait_randomly()
+                self.wait_randomly(0.2)
                 ActionChains(self.browser).send_keys(Keys.RETURN).perform()
-                self.wait_randomly()
+                self.wait_randomly(0.2)
             else:
                 ActionChains(self.browser).send_keys(elem_t).perform()
-                self.wait_randomly()
+                self.wait_randomly(0.2)
                 
     def __upload(self, metadata_video: dict):
         self.__get_to_tiktok_upload()

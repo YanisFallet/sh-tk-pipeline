@@ -40,19 +40,19 @@ class ArcManagement:
                     c = arc[account][pool].get("src", [])
                     if len(c) > 0:
                         src.extend(c)
-                        pools.append(pool)
+                        pools.extend([pool]*len(c))  # Repeat the pool name for each source
         else :
             for pool in arc.keys():
                 c = arc[pool].get("src", [])
                 if len(c) > 0:
                     src.extend(c)
-                    pools.append(pool)
-                    
+                    pools.extend([pool]*len(c))  # Repeat the pool name for each source
+                        
         if return_pools:
             return src, pools
         else:
             return src
-    
+        
     @traj_connection
     def get_dist(self, arc):
         dist = []
@@ -69,12 +69,9 @@ class ArcManagement:
     def get_dist_by_google_account(self, arc, google_account_name : str):
         self.google_account_is_valid(google_account_name)
         dist = []
-        for account in arc.keys():
-            if account == google_account_name:
-                for pool in arc[account].values():
-                    dist.extend(pool.get("dist", []))
-                return dist
-        return []
+        for pool in arc.get(google_account_name, {}).values():
+                dist.extend(pool.get("dist", []))
+        return dist
             
             
     @traj_connection
@@ -112,4 +109,9 @@ class ArcManagement:
     
     def get_google_accounts(self):
         with open(os.path.join("arc/utils/google_dir.json"), "r") as f:
-            return  json.load(f).keys()
+            return json.load(f).keys()
+        
+        
+if __name__ == "__main__":
+    arc = ArcManagement(src_p="instagram", dist_p="tiktok")
+    print(arc.get_src())

@@ -1,0 +1,13 @@
+humour : 
+    - doing_me_lowkey
+
+voyages : 
+    - bestvacations
+
+
+origami : 
+    - rpadventure809
+
+
+content :
+    - india.yatra
