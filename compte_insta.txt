@@ -1,5 +1,6 @@
 humour : 
     - doing_me_lowkey
+    - adventurre00
 
 voyages : 
     - bestvacations
@@ -11,3 +12,10 @@ origami :
 
 content :
     - india.yatra
+
+sport : 
+- flying___pixels
+
+voiture : 
+
+- unistrucking

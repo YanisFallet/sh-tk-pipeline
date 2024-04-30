@@ -139,7 +139,7 @@ def speedup_video(video : VideoFileClip, max_time : int = 59, overflow_time : in
         return v.speedx(coeff)
     
     
-def build_longer_videos(id_table : int, video : VideoFileClip, min_time: int, gap_time : int = 5):
+def build_longer_videos(id_table : int, video : VideoFileClip, min_time: int, gap_time : int = 4):
     duration = video.duration
     if duration + gap_time >= min_time:
         coeff = duration / min_time + 0.001
@@ -210,6 +210,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
     is_featuring_video = params.get("featuring_video", False)
     max_duration = params.get("max_duration", None)
     min_duration = params.get("min_duration", None)
+    duration_flex = params.get("duration_flex", None)
 
     if min_duration and max_duration and min_duration > max_duration:
         logger.error(f"min_duration > max_duration for {filepath}")
@@ -219,7 +220,11 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
         video_clip = speedup_video(video_clip, max_time=max_duration)
 
     if min_duration:
-        video_clip = build_longer_videos(id_table, video_clip, min_time=min_duration)
+        if duration_flex:
+            if random.uniform(0, 1) > 1 - duration_flex:
+                video_clip = build_longer_videos(id_table, video_clip, min_time=min_duration)
+        else : 
+            video_clip = build_longer_videos(id_table, video_clip, min_time=min_duration)
     
     if is_featuring_video:
         pool_video = generate_pool_video(video_clip.duration, video_clip.w, (1-constants["SIZE_FACTOR"] + 0.2)*video_clip.h, pool_name=params.get("f_video_pool_name", None), border=border, margin_size=margin_size, color=color)

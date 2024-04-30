@@ -9,7 +9,6 @@ class ArcManagement:
     def traj_connection(func):
         def wrapper(self, *args, **kwargs):
             file_path = os.path.join(f"arc/traj", f"{self.src_p}->{self.dist_p}.json")
-            print(file_path)
             try:
                 with open(file_path, "r") as f:
                     arc = json.load(f)

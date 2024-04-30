@@ -3,7 +3,6 @@ import sys
 import time
 import requests
 
-
 from concurrent.futures import ThreadPoolExecutor
 
 from instaloader import Instaloader, Profile
@@ -50,55 +49,25 @@ class InstaScrapper:
     def load_past_videos(self):
         return data_manager.select_id_filename_by_src(self.channel_name, 'instagram', self.dist_platform, self.role)
     
+    def __build_video_list(self, posts : list, already_downloaded : list, max_reels_to_look : int = MAX_REELS_TO_LOOK):
+        l_f = []
+        i = 0
+        while len(l_f) < max_reels_to_look and i < len(posts):
+            post = posts[i]
+            if post.is_video and post.shortcode not in already_downloaded:
+                l_f.append(post)
+            i += 1
+        
+        print(f"Found {len(l_f)} reels to download")
+        return l_f
+    
     def __download_video(self):
         already_downloaded = self.load_past_videos()
         profile = Profile.from_username(self.dw.context, self.channel_name)
-        for post in list(set(profile.get_posts()))[:MAX_REELS_TO_LOOK]:
-            if post.is_video:
-                if not post.shortcode in already_downloaded:
-                    if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
-                        target_file = post.shortcode
-                        self.get_video_rapidapi(f"content/reels/{target_file}.mp4", post.shortcode)
-                        logger.info(f"{__name__} : Downloaded '{post.shortcode}'")
-                    else :
-                        i = 1
-                        while os.path.exists(f"content/reels/{post.shortcode}_{i}.mp4"):
-                            i += 1
-                        target_file = f"{post.shortcode}_{i}"
-                        self.get_video_rapidapi(f"content/reels/{target_file}.mp4", post.shortcode)
-                        logger.info(f"{__name__} : Downloaded '{post.shortcode}_{i}'")
-                    
-                    if os.path.exists(f"content/reels/{target_file}.mp4"):    
-                        data_manager.insert_content_data(
-                            source_account = self.channel_name,
-                            source_platform = 'instagram',
-                            dist_platform= self.dist_platform,
-                            dist_account= utils.share_to_account(self.ARC.get_dist_by_pool(self.pool)) if self.role == "content" else None,
-                            pool = self.pool,
-                            role = self.role,
-                            filename = target_file,
-                            filepath = f"content/reels/{target_file}.mp4",
-                            **utils.extract_description_tags(post.caption)
-                        )
-                    else:
-                        logger.info(f"{__name__} : Failed to download '{post.shortcode} probleme insta'")
-                else:
-                    break
-            time.sleep(1/2)
-        return True
-    
-    def __download_video_opti(self):
-        already_downloaded = self.load_past_videos()
-        profile = Profile.from_username(self.dw.context, self.channel_name)
-        posts = profile.get_posts()
-        posts = list(set(profile.get_posts()))[:MAX_REELS_TO_LOOK]
+        
+        posts = self.__build_video_list(list(profile.get_posts()), already_downloaded, MAX_REELS_TO_LOOK)
 
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            executor.map(self.__process_post, posts, [already_downloaded]*len(posts))
-
-    def __process_post(self, post, already_downloaded):
-        if post.is_video and post.shortcode not in already_downloaded:
-            print(post.shortcode)
+        for post in posts:
             if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
                 target_file = post.shortcode
                 self.get_video_rapidapi(f"content/reels/{target_file}.mp4", post.shortcode)
@@ -110,9 +79,8 @@ class InstaScrapper:
                 target_file = f"{post.shortcode}_{i}"
                 self.get_video_rapidapi(f"content/reels/{target_file}.mp4", post.shortcode)
                 logger.info(f"{__name__} : Downloaded '{post.shortcode}_{i}'")
-
-            if os.path.exists(f"content/reels/{target_file}.mp4"):
-                print(f"{post.shortcode} downloaded")
+            
+            if os.path.exists(f"content/reels/{target_file}.mp4"):    
                 data_manager.insert_content_data(
                     source_account = self.channel_name,
                     source_platform = 'instagram',
@@ -126,6 +94,46 @@ class InstaScrapper:
                 )
             else:
                 logger.info(f"{__name__} : Failed to download '{post.shortcode} probleme insta'")
+            time.sleep(1/2)
+        return True
+    
+    def __download_video_opti(self):
+        already_downloaded = self.load_past_videos()
+        profile = Profile.from_username(self.dw.context, self.channel_name)
+        posts = self.__build_video_list(list(profile.get_posts()), already_downloaded, MAX_REELS_TO_LOOK)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            executor.map(self.__process_post, posts, [already_downloaded]*len(posts))
+
+    def __process_post(self, post, already_downloaded):
+        print(f"Processing {post.shortcode}")
+        if not os.path.exists(f"content/reels/{post.shortcode}.mp4"):
+            target_file = post.shortcode
+            self.get_video_rapidapi(f"content/reels/{target_file}.mp4", post.shortcode)
+            logger.info(f"{__name__} : Downloaded '{post.shortcode}'")
+        else :
+            i = 1
+            while os.path.exists(f"content/reels/{post.shortcode}_{i}.mp4"):
+                i += 1
+            target_file = f"{post.shortcode}_{i}"
+            self.get_video_rapidapi(f"content/reels/{target_file}.mp4", post.shortcode)
+            logger.info(f"{__name__} : Downloaded '{post.shortcode}_{i}'")
+
+        if os.path.exists(f"content/reels/{target_file}.mp4"):
+            print(f"{post.shortcode} downloaded")
+            data_manager.insert_content_data(
+                source_account = self.channel_name,
+                source_platform = 'instagram',
+                dist_platform= self.dist_platform,
+                dist_account= utils.share_to_account(self.ARC.get_dist_by_pool(self.pool)) if self.role == "content" else None,
+                pool = self.pool,
+                role = self.role,
+                filename = target_file,
+                filepath = f"content/reels/{target_file}.mp4",
+                **utils.extract_description_tags(post.caption)
+            )
+        else:
+            logger.info(f"{__name__} : Failed to download '{post.shortcode} probleme insta'")
     
     def get_video_save_free(self, target_file : str, postcode : str):
         session = requests.Session()
@@ -159,7 +167,6 @@ class InstaScrapper:
         iteration = 0
         while iteration < 10:
             post_res = session.post(server_url, data=data, allow_redirects=True)
-            print(f"Post response = {post_res.status_code} for {postcode}")
             if post_res.status_code == 200:
                 break
             time.sleep(2)
