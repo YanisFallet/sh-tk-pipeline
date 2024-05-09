@@ -7,7 +7,7 @@ import arc_manager
 from abstract_scrapper import get_driver
 
 from tiktok_download import tk_download
-from insta_download import insta_download
+from core.insta_download import insta_download
 
 from ytb_uploader.ytb_uploader import YoutubeUploader
 from tiktok_uploader.tiktok_uploader import TiktokUploader
@@ -140,7 +140,7 @@ def update_traj_tiktok_to_tiktok():
     
     ARC = arc_manager.ArcManagement(src_p='tiktok', dist_p='tiktok')
     sources, pools = ARC.get_src(return_pools=True)
-    driver = get_driver(profile = "Profile 3", headless=False)
+    driver = get_driver(profile = "Profile 5", headless=False)
 
     for source, pool in zip(sources, pools):
         to_the_bottom, is_useless = data_manager.update_src_is_bottom_useless(source, role = "content")

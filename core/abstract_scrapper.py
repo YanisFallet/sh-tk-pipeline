@@ -1,6 +1,7 @@
 import os
 import time
 import random
+import sys
 
 import undetected_chromedriver as uc
 from selenium.webdriver.chrome.service import Service
@@ -9,11 +10,14 @@ from selenium.webdriver.chrome.service import Service
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from arc_manager import ArcManagement
+
 
 def get_driver(profile = None, headless = False):
     if profile is not None: 
         print(f"Using profile {profile}")
-        if profile not in ["Default", "Profile 4", "Profile 3"]:
+        if profile not in ArcManagement().get_google_profile():
             raise Exception("Profile must be 'Default', 'Profile 3' or 'Profile 4'")
         else:
             s = Service('/Users/yanisfallet/Downloads/chromedriver')

@@ -3,7 +3,7 @@ import time
 import data_manager
 from abstract_scrapper import get_driver
 from arc_manager import ArcManagement
-from insta_download.insta_download import InstaScrapper
+from core.insta_download.insta_download import InstaScrapper
 from tiktok_download.tk_download import TikTokScraper
 
 class UpdatePools:

@@ -108,9 +108,14 @@ class ArcManagement:
     
     def get_google_accounts(self):
         with open(os.path.join("arc/utils/google_dir.json"), "r") as f:
-            return json.load(f).keys()
+            return list(json.load(f).keys())
+        
+        
+    def get_google_profile(self):
+        with open(os.path.join("arc/utils/google_dir.json"), "r") as f:
+            return list(json.load(f).values())
         
         
 if __name__ == "__main__":
     arc = ArcManagement(src_p="instagram", dist_p="tiktok")
-    print(arc.get_src())
+    print(arc.get_google_profile())

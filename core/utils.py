@@ -57,6 +57,10 @@ def must_tagged(dist_account: str, platform: str) -> bool:
     dist_data = get_dist_data(dist_account, platform)
     return bool(dist_data and dist_data.get("must_tagged", False))
 
+def get_tags_to_add(dist_account: str, platform: str) -> list:
+    dist_data = get_dist_data(dist_account, platform)
+    return dist_data.get("tags", []) if dist_data else []
+
 def get_language(dist_account: str, platform: str) -> str:
     dist_data = get_dist_data(dist_account, platform)
     return dist_data.get("language", "fr") if dist_data else "fr"

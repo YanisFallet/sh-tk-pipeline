@@ -14,7 +14,8 @@ def main():
     # pool_sccrapper.run()
 
     # update the trajectories
-    update_traj.update_traj_instagram_to_tiktok()
+    # update_traj.update_traj_instagram_to_tiktok()
+    update_traj.update_traj_tiktok_to_tiktok()
     
     logger.info(f"{__name__} : Finished")
     print("Finished")

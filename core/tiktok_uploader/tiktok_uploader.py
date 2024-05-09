@@ -11,7 +11,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 
 from tiktok_uploader.metadata import load_metadata
-# from metadata import load_metadata
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import utils
@@ -24,10 +23,11 @@ constants = toml.load("core/tiktok_uploader/constants.toml")
 
 class TiktokUploader:
     def __init__(self, google_account_name: str, source_platform: str):
-        if google_account_name not in ["shortsfactory33", "yanis.fallet", "picorp696"]:
+        self.ARC = ArcManagement(src_p=source_platform, dist_p="tiktok")
+        
+        if google_account_name not in self.ARC.get_google_accounts():
             raise Exception(f"Google account '{google_account_name}' name not found")
 
-        self.ARC = ArcManagement(src_p=source_platform, dist_p="tiktok")
         self.google_account_name = google_account_name
         self.source_platform = source_platform
         self.dist_account = self.ARC.get_dist_by_google_account(self.google_account_name)
@@ -60,14 +60,19 @@ class TiktokUploader:
         time.sleep(wait_time)
 
 
-    def __inject_caption(self, text: str, caption_input_xpath):
+    def __inject_caption(self, text: str):
         split_text = utils.split_text_m_h_t(text)
         
         i = 0
         found = False
         while i < 100 and not found:
             try:
-                caption = self.browser.find_element(By.XPATH, caption_input_xpath)
+                if i%2 == 0:
+                    caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT"])
+                    self.choice = 1
+                else :
+                    caption = self.browser.find_element(By.XPATH, constants["CAPTION_INPUT_2"])
+                    self.choice = 2
                 found = True
             except NoSuchElementException:
                 self.wait_randomly()
@@ -79,12 +84,12 @@ class TiktokUploader:
         for elem_t in split_text:
             if elem_t.startswith("#") or elem_t.startswith("@"):
                 ActionChains(self.browser).send_keys(elem_t).perform()
-                self.wait_randomly(0.2)
+                self.wait_randomly(0.5 if elem_t.startswith("#") else 0.1)
                 ActionChains(self.browser).send_keys(Keys.RETURN).perform()
-                self.wait_randomly(0.2)
+                self.wait_randomly(0.5 if elem_t.startswith("#") else 0.1)
             else:
                 ActionChains(self.browser).send_keys(elem_t).perform()
-                self.wait_randomly(0.2)
+                self.wait_randomly(0.5)
                 
     def __upload(self, metadata_video: dict):
         self.__get_to_tiktok_upload()
@@ -99,12 +104,11 @@ class TiktokUploader:
 
         self.browser.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(absolute_path)
 
-        self.__inject_caption(metadata_video[constants["CAPTION"]], constants["CAPTION_INPUT"])
+        self.__inject_caption(metadata_video[constants["CAPTION"]])
 
         self.wait_randomly(factor= 2)
 
-        self.browser.find_element(By.XPATH, constants["POST_BUTTON"]).click()
-        self.wait_randomly()
+        self.browser.find_element(By.XPATH, constants["POST_BUTTON"] if self.choice == 1 else constants["POST_BUTTON_2"]).click()
         
         data_manager.is_published(id_table=metadata_video[constants["ID"]])
         logger.info(f"{__name__}: Video {absolute_path} uploaded to {self.dist_account[0]} on Tiktok")
@@ -121,7 +125,7 @@ class TiktokUploader:
         while not found:
             try:
                 logger.info(f"{__name__}: Waiting for modal for {self.dist_account[0]} on Tiktok")
-                self.browser.find_element(By.XPATH, constants["MODAL_BTN"])
+                self.browser.find_element(By.XPATH, constants["MODAL_BTN"] if self.choice == 1 else constants["MODAL_BTN_2"])
                 found = True
             except:
                 self.wait_randomly()
@@ -135,14 +139,14 @@ class TiktokUploader:
 
     def __bulk_upload(self, metadata_channel : list[dict]):
         for metadata_video in metadata_channel:
-            if  data_manager.is_uploadable(self.dist_account[0], "tiktok", MAX_UPLOAD_DAILY=10):                   
+            if  data_manager.is_uploadable(self.dist_account[0], "tiktok", MAX_UPLOAD_DAILY=5):                   
                 self.__get_to_tiktok_upload()
                 self.__upload(metadata_video)
                 self.wait_randomly()
     
     def run(self):
         for dist_account in self.dist_account:
-            if data_manager.is_uploadable(dist_account, "tiktok", count = False, MAX_UPLOAD_DAILY=10):
+            if data_manager.is_uploadable(dist_account, "tiktok", count = False, MAX_UPLOAD_DAILY=5):
                 print("inside")
                 self.__get_driver_t()
                 self.wait_randomly()
@@ -155,13 +159,5 @@ class TiktokUploader:
             else:
                 logger.info(f"{__name__} : Upload to Tiktok for {dist_account} not available")
         
-if __name__ == "__main__":
-    uploader = TiktokUploader(
-        google_account_name = "shortsfactory33",
-        source_platform = "instagram"
-    )
-    print(uploader.dist_account)
-    
-    # uploader.run()
     
     

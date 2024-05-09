@@ -11,7 +11,11 @@ TIKTOK_CREATOR_CENTER = "https://www.tiktok.com/creator-center/upload?from=uploa
 
 CAPTION_INPUT = '//*[@id="root"]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/div[1]/div/div/div/div/div/div/span/span'
 
+CAPTION_INPUT_2 = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div[1]/div/div/div/div/div/div/div/span/span'
+
 POST_BUTTON = '//*[@id="root"]/div/div/div/div[2]/div/div[2]/div[7]/div[2]/button'
+
+POST_BUTTON_2 = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[8]/div[2]/button'
 
 
 F_MENTION_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/button[1]'
@@ -21,3 +25,5 @@ F_HASHTAG_BTN = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div
 
 
 MODAL_BTN = '//*[@id="root"]/div/div/div/div[2]/div/div[2]/div[8]/div'
+
+MODAL_BTN_2  = '//*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[9]/div/div[2]/div[1]'

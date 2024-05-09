@@ -46,6 +46,7 @@ class InstaScrapper:
         
         
         
+        
     def load_past_videos(self):
         return data_manager.select_id_filename_by_src(self.channel_name, 'instagram', self.dist_platform, self.role)
     

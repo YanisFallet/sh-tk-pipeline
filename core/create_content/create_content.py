@@ -80,7 +80,6 @@ def check_video(cursor_database, path : str, min_duration : int = 2, dimensions_
         return False
     try: 
         clip = VideoFileClip(path)
-        
     except OSError:
         cursor_database.execute("""
             UPDATE data_content
@@ -152,8 +151,8 @@ def build_longer_videos(id_table : int, video : VideoFileClip, min_time: int, ga
 def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_time : int):
     video_selection = cursor_database.execute("""
         SELECT id, filepath FROM data_content
-        WHERE (dist_account, dist_platform) = (
-            SELECT dist_account, dist_platform FROM data_content
+        WHERE (dist_account, dist_platform, source_account) = (
+            SELECT dist_account, dist_platform, source_account FROM data_content
             WHERE id = ?
         )
         AND role = 'content'
@@ -184,7 +183,7 @@ def compile_videos(cursor_database, id_table : int, video : VideoFileClip, min_t
         linked_to = ?
         WHERE id = ?
     """, ((id_table, id_) for id_ in id_list))
-    print(videos, len(videos))
+
     return concatenate_videoclips(videos, method="compose")
 
 @data_manager.sql_connect("data/database.db")
@@ -243,7 +242,7 @@ def process_content(cursor, id_table : int, filepath : str, params : dict = {}) 
     if final_clip.fps is None:
         final_clip.fps = 25  # or any other default value
 
-    final_clip.write_videofile(filepath, fps=final_clip.fps, codec = "libx264", threads = 3, logger=None)
+    final_clip.write_videofile(filepath, fps=final_clip.fps, codec = "libx264",preset = "ultrafast", threads = 3, logger=None)
 
     return True
 
@@ -316,8 +315,8 @@ def videos_processing_by_account_concurrent(cursor_database, dist_account: str, 
         else:
             logger.info(f"{__name__} : Video processing failed for {filepath} of {dist_account} or already done")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers= 10) as executor:
-        list(executor.map(process_video, selection))
+    with concurrent.futures.ThreadPoolExecutor(max_workers= 4) as executor:
+        list(tqdm(executor.map(process_video, selection), total=len(selection)))
 
     logger.info(f"{__name__} : Videos processing done for {dist_account}")
 
@@ -358,10 +357,12 @@ def videos_processing_by_dist_platform(dist_platform : str):
     
     logger.info(f"{__name__} : Videos processing done for all accounts of {dist_platform}")
 
+
 @data_manager.sql_connect("data/database.db")
 def check_all_videos(cursor_database):
-    all = cursor_database.execute("SELECT id, filepath FROM data_content WHERE is_published = 0").fetchall()
-    for video in all:
+    all = cursor_database.execute("SELECT id, filepath FROM data_content WHERE is_published = 0 AND is_processed = 0").fetchall()
+
+    def check_video_and_update(video):
         if not check_video(video[1]):
             cursor_database.execute("""
                 UPDATE data_content
@@ -372,6 +373,11 @@ def check_all_videos(cursor_database):
             """, (video[0],))
             logger.info(f"{__name__} : Video {video[1]} corrupted")
             print(f"{video[1]} corrupted")
+        print(f"{video[1]} checked")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        executor.map(check_video_and_update, all)
+
     logger.info(f"{__name__} : All videos checked")
     
 
